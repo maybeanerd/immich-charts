@@ -1,4 +1,4 @@
-{{- if .Values.immich.persistence.library.enabled }}
+{{- if and .Values.immich.persistence.library.enabled .Values.immich.persistence.library.create }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:

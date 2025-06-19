@@ -1,4 +1,4 @@
-{{- if .Values.immich.persistence.external.enabled }}
+{{- if and .Values.immich.persistence.external.enabled .Values.immich.persistence.external.create }}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
