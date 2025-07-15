@@ -159,34 +159,34 @@ serviceMonitor:
       - port: metrics-ms
         scheme: http
 
-persistence:
-  server:
-    identifier: server
-    advancedMounts:
-      - type: configMap
-        name: "{{ .Release.Name }}-immich-config"
-      - name: immich-library
-        path: /usr/src/app/upload
-        accessMode: ReadWriteMany
-        size: 1Ti
-        storageClass: # provide your storage class
-        # existingClaim: immich-library Provide your existing PVC
-      - path: /usr/src/app/external
-        name: immich-external
-        accessMode: ReadWriteMany
-        size: 1Ti
-        storageClass: # provide your storage class
-        # existingClaim: immich-external Provide your existing PVC
-  machine-learning:
-    identifier: machine-learning
-    advancedMounts:
-      - name: cache
-        mountPath: /cache
-        size: 10Gi
-        # Optional: Set this to pvc to avoid downloading the ML models every start.
-        type: emptyDir
-        accessMode: ReadWriteMany
-        storageClass: # provide your storage class
+# persistence:
+#   server:
+#     identifier: server
+#     advancedMounts:
+#       - type: configMap
+#         name: "{{ .Release.Name }}-immich-config"
+#       - name: immich-library
+#         path: /usr/src/app/upload
+#         accessMode: ReadWriteMany
+#         size: 1Ti
+#         storageClass: # provide your storage class
+#         # existingClaim: immich-library Provide your existing PVC
+#       - path: /usr/src/app/external
+#         name: immich-external
+#         accessMode: ReadWriteMany
+#         size: 1Ti
+#         storageClass: # provide your storage class
+#         # existingClaim: immich-external Provide your existing PVC
+#   machine-learning:
+#     identifier: machine-learning
+#     advancedMounts:
+#       - name: cache
+#         mountPath: /cache
+#         size: 10Gi
+#         # Optional: Set this to pvc to avoid downloading the ML models every start.
+#         type: emptyDir
+#         accessMode: ReadWriteMany
+#         storageClass: # provide your storage class
 
 ingress:
   server:
