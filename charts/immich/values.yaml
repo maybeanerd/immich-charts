@@ -18,79 +18,75 @@ image:
   repository: ghcr.io/immich-app/immich-server
   tag: v1.135.3
 
-immich:
-  service:
-    server:
-      enabled: true
-      primary: true
-      type: ClusterIP
-      ports:
-        http:
-          enabled: true
-          primary: true
-          port: 2283
-          protocol: HTTP
-        metrics-api:
-          enabled: false
-          port: 8081
-          protocol: HTTP
-        metrics-ms:
-          enabled: false
-          port: 8082
-          protocol: HTTP
-      image:
-        repository: ghcr.io/immich-app/immich-server
-        pullPolicy: IfNotPresent
-      env:
-        IMMICH_TELEMETRY_INCLUDE: all
-        # {{- if .Values.immich.configuration }}
-        #    IMMICH_CONFIG_FILE: /config/immich-config.yaml
-        # {{- end }}
-      persistence:
-        config:
-          enabled: true
-          type: configMap
-          name: "{{ .Release.Name }}-immich-config"
-        library:
-          enabled: true
-          mountPath: /usr/src/app/upload
-          name: immich-library
-          accessMode: ReadWriteMany
-          size: 1Ti
-          storageClass: # provide your storage class
-          # existingClaim: immich-library Provide your existing PVC
-        external:
-          enabled: true
-          mountPath: /usr/src/app/external
-          name: immich-external
-          accessMode: ReadWriteMany
-          size: 1Ti
-          storageClass: # provide your storage class
-          # existingClaim: immich-external Provide your existing PVC
-      ingress:
-        main:
-          enabled: false
-          annotations:
-            # proxy-body-size is set to 0 to remove the body limit on file uploads
-            nginx.ingress.kubernetes.io/proxy-body-size: "0"
-          hosts:
-            - host: immich.local
-              paths:
-                - path: "/"
-          tls: []
-    # TODO move to be managed in common values
-    # configuration is immich-config.json converted to yaml
-    # ref: https://immich.app/docs/install/config-file/
-    #
-    # configuration:
-    # {}
-    # trash:
-    #   enabled: false
-    #   days: 30
-    # storageTemplate:
-    #   enabled: true
-    #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+controllers:
+  server:
+    enabled: true
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      server:
+        enabled: true
+        ports:
+          - name: http
+            containerPort: 2283
+            protocol: HTTP
+          - name: metrics-api
+            containerPort: 8081
+            protocol: HTTP
+          - name: metrics-ms
+            containerPort: 8082
+            protocol: HTTP
+        image:
+          repository: ghcr.io/immich-app/immich-server
+          pullPolicy: IfNotPresent
+        env:
+          IMMICH_TELEMETRY_INCLUDE: all
+          # {{- if .Values.immich.configuration }}
+          #    IMMICH_CONFIG_FILE: /config/immich-config.yaml
+          # {{- end }}
 
+      # TODO move to be managed in common values
+      # configuration is immich-config.json converted to yaml
+      # ref: https://immich.app/docs/install/config-file/
+      #
+      # configuration:
+      # {}
+      # trash:
+      #   enabled: false
+      #   days: 30
+      # storageTemplate:
+      #   enabled: true
+      #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+
+persistence:
+  server:
+    name: server
+    items:
+      - type: configMap
+        name: "{{ .Release.Name }}-immich-config"
+      - name: immich-library
+        path: /usr/src/app/upload
+        accessMode: ReadWriteMany
+        size: 1Ti
+        storageClass: # provide your storage class
+        # existingClaim: immich-library Provide your existing PVC
+      - path: /usr/src/app/external
+        name: immich-external
+        accessMode: ReadWriteMany
+        size: 1Ti
+        storageClass: # provide your storage class
+        # existingClaim: immich-external Provide your existing PVC
+ingress:
+  server:
+    enabled: false
+    annotations:
+      # proxy-body-size is set to 0 to remove the body limit on file uploads
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    hosts:
+      - host: immich.local
+        paths:
+          - path: "/"
+    tls: []
 # Dependencies
 
 postgresql:
