@@ -24,7 +24,7 @@ controllers:
     strategy: RollingUpdate
     replicas: 1
     containers:
-      server:
+      main:
         enabled: true
         ports:
           - name: http
@@ -44,6 +44,40 @@ controllers:
           # {{- if .Values.immich.configuration }}
           #    IMMICH_CONFIG_FILE: /config/immich-config.yaml
           # {{- end }}
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/server/ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/server/ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/server/ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 30
 
       # TODO move to be managed in common values
       # configuration is immich-config.json converted to yaml
@@ -57,6 +91,16 @@ controllers:
       # storageTemplate:
       #   enabled: true
       #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+podAnnotations:
+  checksum/config: "{{ .Values.immich.configuration | toYaml | sha256sum }}"
+
+serviceMonitor:
+  server:
+    endpoints:
+      - port: metrics-api
+        scheme: http
+      - port: metrics-ms
+        scheme: http
 
 persistence:
   server:
