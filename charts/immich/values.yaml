@@ -41,6 +41,7 @@ controllers:
             protocol: HTTP
         image:
           repository: ghcr.io/immich-app/immich-server
+          tag: "{{ .Values.image.tag}}"
           pullPolicy: IfNotPresent
         env:
           IMMICH_TELEMETRY_INCLUDE: all
@@ -107,6 +108,7 @@ controllers:
             protocol: HTTP
         image:
           repository: ghcr.io/immich-app/immich-machine-learning
+          tag: "{{ .Values.image.tag}}"
           pullPolicy: IfNotPresent
         env:
           TRANSFORMERS_CACHE: /cache
@@ -150,6 +152,7 @@ podAnnotations:
 
 serviceMonitor:
   server:
+    serviceName: server
     endpoints:
       - port: metrics-api
         scheme: http
