@@ -2,15 +2,6 @@
 
 # These entries are shared between all the Immich components
 
-env:
-  REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
-  DB_HOSTNAME: "{{ .Release.Name }}-postgresql"
-  DB_USERNAME: "{{ .Values.postgresql.global.postgresql.auth.username }}"
-  DB_DATABASE_NAME: "{{ .Values.postgresql.global.postgresql.auth.database }}"
-  # -- You should provide your own secret outside of this helm-chart and use `postgresql.global.postgresql.auth.existingSecret` to provide credentials to the postgresql instance
-  DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
-  IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
-
 # TODO provide top level configs for things like persistence, using included DB, using included redis, DB settings (such as HDD vs SSD mode)
 # Also validate them in the checks.yaml
 
@@ -44,7 +35,14 @@ controllers:
           tag: "{{ .Values.image.tag}}"
           pullPolicy: IfNotPresent
         env:
-          IMMICH_TELEMETRY_INCLUDE: all
+          REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
+          DB_HOSTNAME: "{{ .Release.Name }}-postgresql"
+          DB_USERNAME: "{{ .Values.postgresql.global.postgresql.auth.username }}"
+          DB_DATABASE_NAME: "{{ .Values.postgresql.global.postgresql.auth.database }}"
+          # -- You should provide your own secret outside of this helm-chart and use `postgresql.global.postgresql.auth.existingSecret` to provide credentials to the postgresql instance
+          DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
+          IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
+          IMMICH_TELEMETRY_INCLUDE: "all"
           # {{- if .Values.immich.configuration }}
           #    IMMICH_CONFIG_FILE: /config/immich-config.yaml
           # {{- end }}
@@ -111,6 +109,13 @@ controllers:
           tag: "{{ .Values.image.tag}}"
           pullPolicy: IfNotPresent
         env:
+          REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
+          DB_HOSTNAME: "{{ .Release.Name }}-postgresql"
+          DB_USERNAME: "{{ .Values.postgresql.global.postgresql.auth.username }}"
+          DB_DATABASE_NAME: "{{ .Values.postgresql.global.postgresql.auth.database }}"
+          # -- You should provide your own secret outside of this helm-chart and use `postgresql.global.postgresql.auth.existingSecret` to provide credentials to the postgresql instance
+          DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
+          IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
           TRANSFORMERS_CACHE: /cache
         probes:
           liveness:
