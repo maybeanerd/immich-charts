@@ -155,6 +155,7 @@ serviceMonitor:
 
 persistence:
   server:
+    identifier: server
     advancedMounts:
       - type: configMap
         name: "{{ .Release.Name }}-immich-config"
@@ -171,6 +172,7 @@ persistence:
         storageClass: # provide your storage class
         # existingClaim: immich-external Provide your existing PVC
   machine-learning:
+    identifier: machine-learning
     advancedMounts:
       - name: cache
         mountPath: /cache
