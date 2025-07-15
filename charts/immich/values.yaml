@@ -50,7 +50,7 @@ immich:
         config:
           enabled: true
           type: configMap
-          name: {{ .Release.Name }}-immich-config
+          name: "{{ .Release.Name }}-immich-config"
         library:
           enabled: true
           mountPath: /usr/src/app/upload
@@ -83,13 +83,13 @@ immich:
     # ref: https://immich.app/docs/install/config-file/
     #
     # configuration:
-      # {}
-      # trash:
-      #   enabled: false
-      #   days: 30
-      # storageTemplate:
-      #   enabled: true
-      #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+    # {}
+    # trash:
+    #   enabled: false
+    #   days: 30
+    # storageTemplate:
+    #   enabled: true
+    #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
 
 # Dependencies
 
