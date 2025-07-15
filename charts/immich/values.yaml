@@ -91,6 +91,57 @@ controllers:
       # storageTemplate:
       #   enabled: true
       #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+  machine-learning:
+    enabled: true
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      main:
+        enabled: true
+        ports:
+          - name: http
+            containerPort: 3003
+            protocol: HTTP
+        image:
+          repository: ghcr.io/immich-app/immich-machine-learning
+          pullPolicy: IfNotPresent
+        env:
+          TRANSFORMERS_CACHE: /cache
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 60
+
 podAnnotations:
   checksum/config: "{{ .Values.immich.configuration | toYaml | sha256sum }}"
 
@@ -104,8 +155,7 @@ serviceMonitor:
 
 persistence:
   server:
-    name: server
-    items:
+    advancedMounts:
       - type: configMap
         name: "{{ .Release.Name }}-immich-config"
       - name: immich-library
@@ -120,6 +170,16 @@ persistence:
         size: 1Ti
         storageClass: # provide your storage class
         # existingClaim: immich-external Provide your existing PVC
+  machine-learning:
+    advancedMounts:
+      - name: cache
+        mountPath: /cache
+        size: 10Gi
+        # Optional: Set this to pvc to avoid downloading the ML models every start.
+        type: emptyDir
+        accessMode: ReadWriteMany
+        storageClass: # provide your storage class
+
 ingress:
   server:
     enabled: false
@@ -131,6 +191,7 @@ ingress:
         paths:
           - path: "/"
     tls: []
+
 # Dependencies
 
 postgresql:
@@ -185,21 +246,3 @@ redis:
       enabled: false
   auth:
     enabled: false
-
-# Immich components
-
-machine-learning:
-  enabled: true
-  image:
-    repository: ghcr.io/immich-app/immich-machine-learning
-    pullPolicy: IfNotPresent
-  env:
-    TRANSFORMERS_CACHE: /cache
-  persistence:
-    cache:
-      enabled: true
-      size: 10Gi
-      # Optional: Set this to pvc to avoid downloading the ML models every start.
-      type: emptyDir
-      accessMode: ReadWriteMany
-      storageClass: # provide your storage class
