@@ -1,42 +1,13 @@
-{{- define "immich.server.hardcodedValues" -}}
 global:
   nameOverride: server
 
 controller:
   strategy: RollingUpdate
 
-env:
-  {{ if .Values.immich.metrics.enabled }}
-      IMMICH_TELEMETRY_INCLUDE: all
-  {{ end }}
-  {{- if .Values.immich.configuration }}
-      IMMICH_CONFIG_FILE: /config/immich-config.yaml
-  {{- end }}
-
 {{- if .Values.immich.configuration }}
 podAnnotations:
   checksum/config: {{ .Values.immich.configuration | toYaml | sha256sum }}
 {{- end }}
-
-service:
-  main:
-    enabled: true
-    primary: true
-    type: ClusterIP
-    ports:
-      http:
-        enabled: true
-        primary: true
-        port: 2283
-        protocol: HTTP
-      metrics-api:
-        enabled: {{ .Values.immich.metrics.enabled }}
-        port: 8081
-        protocol: HTTP
-      metrics-ms:
-        enabled: {{ .Values.immich.metrics.enabled }}
-        port: 8082
-        protocol: HTTP
 
 serviceMonitor:
   main:
@@ -71,28 +42,3 @@ probes:
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 30
-
-persistence:
-{{- if .Values.immich.configuration }}
-  config:
-    enabled: true
-    type: configMap
-    name: {{ .Release.Name }}-immich-config
-{{- end }}
-  library:
-    enabled: true
-    mountPath: /usr/src/app/upload
-    existingClaim: {{ .Values.immich.persistence.library.existingClaim }}
-{{ if .Values.immich.persistence.external.enabled }}
-  external:
-    enabled: true
-    mountPath: /usr/src/app/external
-    existingClaim: {{ .Values.immich.persistence.external.existingClaim }}
-{{- end }}
-{{- end }}
-
-{{ if .Values.server.enabled }}
-{{- $ctx := deepCopy . -}}
-{{- $_ := get .Values "server" | mergeOverwrite $ctx.Values -}}
-{{- $_ = include "immich.server.hardcodedValues" . | fromYaml | merge $ctx.Values -}}
-{{ end }}
