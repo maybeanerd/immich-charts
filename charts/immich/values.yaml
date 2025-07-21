@@ -47,12 +47,12 @@ controllers:
 
 # see https://bjw-s-labs.github.io/helm-charts/docs/common-library/storage/types/persistentVolumeClaim/#existing-claim
 persistence:
-   immich-library:
+   library:
      accessMode: ReadWriteOnce
      size: 100Gi
      nameOverride: ''
      storageClass: ''
-   # immich-external-1:
+   # external-1:
    #   type: persistentVolumeClaim
    #   accessMode: ReadWriteOnce
    #   size: 100Gi

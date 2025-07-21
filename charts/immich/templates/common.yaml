@@ -18,7 +18,7 @@ persistence:
         readOnly: false
   {{- end }}
 
-  immich-library:
+  library:
     type: persistentVolumeClaim
     advancedMounts:
       server:
