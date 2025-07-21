@@ -26,13 +26,8 @@ immich:
 controllers:
   server:
     enabled: true
-    containers:
-      main:
-        persistence:
-          library:
-            mountPath: /usr/src/app/upload
-            # existingClaim: ''
-
+    # containers:
+    #   main: {}
   machine-learning:
     enabled: true
     containers:
@@ -41,48 +36,83 @@ controllers:
         #   limits:
         #     nvidia.com/gpu.shared: '1'
 
-# persistence:
-#   server:
-#     identifier: server
-#     advancedMounts:
-#       - type: configMap
-#         name: "{{ .Release.Name }}-immich-config"
-#       - name: immich-library
-#         path: /usr/src/app/upload
-#         accessMode: ReadWriteMany
-#         size: 1Ti
-#         storageClass: # provide your storage class
-#         # existingClaim: immich-library Provide your existing PVC
-#       - path: /usr/src/app/external
-#         name: immich-external
-#         accessMode: ReadWriteMany
-#         size: 1Ti
-#         storageClass: # provide your storage class
-#         # existingClaim: immich-external Provide your existing PVC
-#   machine-learning:
-#     identifier: machine-learning
-#     advancedMounts:
-#       - name: cache
-#         mountPath: /cache
-#         size: 10Gi
-#         # Optional: Set this to pvc to avoid downloading the ML models every start.
-#         type: emptyDir
-#         accessMode: ReadWriteMany
-#         storageClass: # provide your storage class
+# see https://bjw-s-labs.github.io/helm-charts/docs/common-library/storage/types/persistentVolumeClaim/#existing-claim
+persistence:
+   immich-library:
+     accessMode: ReadWriteOnce
+     size: 100Gi
+     nameOverride: ''
+     storageClass: ''
+   immich-external:
+     accessMode: ReadWriteOnce
+     size: 100Gi
+  # Optional: Set this to pvc to avoid downloading the ML models every start.
+  # machine-learning-cache:
+  #   enabled: true
+  #   accessMode: ReadWriteOnce
+  #   size: 10Gi
 
-ingress:
-  main:
-    enabled: true
-    annotations:
-      # proxy-body-size is set to 0 to remove the body limit on file uploads
-      nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    hosts:
-      - host: immich.local
-        paths:
-          - path: "/"
-            service:
-              identifier: server
-    tls: []
+# ingress:
+#   main:
+#     annotations: {}
+#       # proxy-body-size is set to 0 to remove the body limit on file uploads
+#       # nginx.ingress.kubernetes.io/proxy-body-size: "0"
+#     hosts:
+#       - host: immich.local
+#         paths:
+#           - path: "/"
+#             service:
+#               identifier: server
+#     # tls: []
+
+rawResources:
+  redis:
+    apiVersion: redis.redis.opstreelabs.in/v1beta2
+    kind: Redis
+    spec:
+      kubernetesConfig:
+        image: 'quay.io/opstree/redis:v7.0.5'
+        imagePullPolicy: IfNotPresent
+      redisExporter:
+        enabled: true
+        image: 'quay.io/opstree/redis-exporter:v1.44.0'
+        imagePullPolicy: IfNotPresent
+      storage:
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 10Gi
+            # storageClassName: ''
+  psql:
+    apiVersion: postgresql.cnpg.io/v1
+    kind: Cluster
+    spec:
+      imageName: ghcr.io/tensorchord/cloudnative-pgvecto.rs:16-v0.4.0
+      instances: 1
+      postgresql:
+        shared_preload_libraries:
+          - "vectors.so"
+      managed:
+        roles:
+          - name: immich
+            superuser: true
+            login: true
+      bootstrap:
+        initdb:
+          database: immich
+          owner: immich
+          secret:
+            name: immich-psql
+          postInitSQL:
+            - CREATE EXTENSION IF NOT EXISTS "vectors";
+            - CREATE EXTENSION IF NOT EXISTS "cube" CASCADE;
+            - CREATE EXTENSION IF NOT EXISTS "earthdistance" CASCADE;
+      storage:
+        size: 4Gi
+        # storageClass: immich-postgres
 
 # Dependencies
 

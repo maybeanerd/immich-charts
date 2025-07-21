@@ -8,10 +8,37 @@ global:
   nameOverride: "{{ .Release.Name }}"
 {{ end }}
 
-{{- if .Values.immich.configuration }}
-podAnnotations:
-  checksum/config: {{ .Values.immich.configuration | toYaml | sha256sum }}
-{{- end }}
+persistence:
+  {{- if .Values.immich.configuration }}
+  immich-config:
+    type: configMap
+    name: "{{ .Release.Name }}-immich-config"
+    globalMounts:
+      - path: /config
+        readOnly: false
+  {{- end }}
+
+  immich-library:
+    type: persistentVolumeClaim
+    advancedMounts:
+      server:
+        main:
+          - path: /usr/src/app/upload
+
+  immich-external:
+    type: persistentVolumeClaim
+    advancedMounts:
+      server:
+        main:
+          - path: /usr/src/app/external
+  machine-learning-cache:
+    enabled: false
+    type: persistentVolumeClaim
+    advancedMounts:
+      machine-learning:
+        main:
+          - path: /cache
+
 
 serviceMonitor:
   server:
@@ -21,6 +48,7 @@ serviceMonitor:
         scheme: http
       - port: metrics-ms
         scheme: http
+
 service:
   server:
     controller: server
@@ -48,6 +76,9 @@ service:
 {{- $_ := mergeOverwrite .Values (include "immich.hardcodedValues" . | fromYaml) -}}
 
 {{- define "immich.common.templatedEnvs" -}}
+{{- if .Values.immich.configuration }}
+IMMICH_CONFIG_FILE: /config/immich-config.yaml
+{{- end }}
 REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
 DB_HOSTNAME: "{{ .Release.Name }}-postgresql"
 DB_USERNAME: "{{ .Values.postgresql.global.postgresql.auth.username }}"
