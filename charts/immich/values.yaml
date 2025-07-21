@@ -10,159 +10,36 @@ image:
   tag: v1.135.3
 
 immich:
+  metrics:
+    enabled: true
+  # TODO move to be managed in common values
+  # configuration is immich-config.json converted to yaml
+  # ref: https://immich.app/docs/install/config-file/
   configuration: {}
+  # trash:
+  #   enabled: false
+  #   days: 30
+  # storageTemplate:
+  #   enabled: true
+  # template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
 
 controllers:
   server:
     enabled: true
-    strategy: RollingUpdate
-    replicas: 1
     containers:
       main:
-        enabled: true
-        ports:
-          - name: http
-            containerPort: 2283
-            protocol: HTTP
-          - name: metrics-api
-            containerPort: 8081
-            protocol: HTTP
-          - name: metrics-ms
-            containerPort: 8082
-            protocol: HTTP
-        image:
-          repository: ghcr.io/immich-app/immich-server
-          tag: "{{ .Values.image.tag}}"
-          pullPolicy: IfNotPresent
-        env:
-          REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
-          DB_HOSTNAME: "{{ .Release.Name }}-postgresql"
-          DB_USERNAME: "{{ .Values.postgresql.global.postgresql.auth.username }}"
-          DB_DATABASE_NAME: "{{ .Values.postgresql.global.postgresql.auth.database }}"
-          # -- You should provide your own secret outside of this helm-chart and use `postgresql.global.postgresql.auth.existingSecret` to provide credentials to the postgresql instance
-          DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
-          IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
-          IMMICH_TELEMETRY_INCLUDE: "all"
-          # {{- if .Values.immich.configuration }}
-          #    IMMICH_CONFIG_FILE: /config/immich-config.yaml
-          # {{- end }}
-        probes:
-          liveness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /api/server/ping
-                port: http
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 3
-          readiness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /api/server/ping
-                port: http
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 3
-          startup:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /api/server/ping
-                port: http
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 30
+        persistence:
+          library:
+            mountPath: /usr/src/app/upload
+            # existingClaim: ''
 
-      # TODO move to be managed in common values
-      # configuration is immich-config.json converted to yaml
-      # ref: https://immich.app/docs/install/config-file/
-      #
-      # configuration:
-      # {}
-      # trash:
-      #   enabled: false
-      #   days: 30
-      # storageTemplate:
-      #   enabled: true
-      #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
   machine-learning:
     enabled: true
-    strategy: RollingUpdate
-    replicas: 1
     containers:
-      main:
-        enabled: true
-        ports:
-          - name: http
-            containerPort: 3003
-            protocol: HTTP
-        image:
-          repository: ghcr.io/immich-app/immich-machine-learning
-          tag: "{{ .Values.image.tag}}"
-          pullPolicy: IfNotPresent
-        env:
-          REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
-          DB_HOSTNAME: "{{ .Release.Name }}-postgresql"
-          DB_USERNAME: "{{ .Values.postgresql.global.postgresql.auth.username }}"
-          DB_DATABASE_NAME: "{{ .Values.postgresql.global.postgresql.auth.database }}"
-          # -- You should provide your own secret outside of this helm-chart and use `postgresql.global.postgresql.auth.existingSecret` to provide credentials to the postgresql instance
-          DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
-          IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
-          TRANSFORMERS_CACHE: /cache
-        probes:
-          liveness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /ping
-                port: http
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 3
-          readiness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /ping
-                port: http
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 3
-          startup:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /ping
-                port: http
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 60
-
-podAnnotations:
-  checksum/config: "{{ .Values.immich.configuration | toYaml | sha256sum }}"
-
-serviceMonitor:
-  server:
-    serviceName: server
-    endpoints:
-      - port: metrics-api
-        scheme: http
-      - port: metrics-ms
-        scheme: http
+      main: {}
+        # resources:
+        #   limits:
+        #     nvidia.com/gpu.shared: '1'
 
 # persistence:
 #   server:
@@ -194,8 +71,8 @@ serviceMonitor:
 #         storageClass: # provide your storage class
 
 ingress:
-  server:
-    enabled: false
+  main:
+    enabled: true
     annotations:
       # proxy-body-size is set to 0 to remove the body limit on file uploads
       nginx.ingress.kubernetes.io/proxy-body-size: "0"
@@ -203,12 +80,14 @@ ingress:
       - host: immich.local
         paths:
           - path: "/"
+            service:
+              identifier: server
     tls: []
 
 # Dependencies
 
 postgresql:
-  enabled: true
+  enabled: false
   image:
     registry: ghcr.io
     repository: immich-app/postgres
@@ -252,7 +131,7 @@ postgresql:
       readOnlyRootFilesystem: false
 
 redis:
-  enabled: true
+  enabled: false
   architecture: standalone
   master:
     persistence:

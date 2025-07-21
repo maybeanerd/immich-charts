@@ -7,8 +7,65 @@
 global:
   nameOverride: "{{ .Release.Name }}"
 {{ end }}
+
+{{- if .Values.immich.configuration }}
+podAnnotations:
+  checksum/config: {{ .Values.immich.configuration | toYaml | sha256sum }}
+{{- end }}
+
+serviceMonitor:
+  server:
+    serviceName: server
+    endpoints:
+      - port: metrics-api
+        scheme: http
+      - port: metrics-ms
+        scheme: http
+service:
+  server:
+    controller: server
+    primary: true
+    ports:
+      http:
+        primary: true
+        port: 2283
+        protocol: HTTP
+      metrics-api:
+        port: 8081
+        protocol: HTTP
+      metrics-ms:
+        port: 8082
+        protocol: HTTP
+
+  machine-learning:
+    controller: machine-learning
+    ports:
+      http:
+        port: 3003
+        protocol: HTTP
+
 {{- end -}}
 {{- $_ := mergeOverwrite .Values (include "immich.hardcodedValues" . | fromYaml) -}}
 
+{{- define "immich.common.templatedEnvs" -}}
+REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
+DB_HOSTNAME: "{{ .Release.Name }}-postgresql"
+DB_USERNAME: "{{ .Values.postgresql.global.postgresql.auth.username }}"
+DB_DATABASE_NAME: "{{ .Values.postgresql.global.postgresql.auth.database }}"
+# -- You should provide your own secret outside of this helm-chart and use `postgresql.global.postgresql.auth.existingSecret` to provide credentials to the postgresql instance
+DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
+{{- end }}
+
+{{- $ctx := deepCopy . -}}
+{{- $containersEnvs := include "immich.common.templatedEnvs" . | fromYaml | dict "env" | dict "main" | dict "containers" -}}
+
+{{/*{{ $containersEnvs | toYaml}}*/}}
+
+{{- $_ = include "immich.server.templatedValues" . | fromYaml | merge $containersEnvs | dict "server" | dict "controllers" | merge $ctx.Values -}}
+{{- $_ = include "immich.machine-learning.templatedValues" . | fromYaml | merge $containersEnvs | dict "machine-learning" | dict "controllers" | merge $ctx.Values -}}
+
+{{/*{{$ctx.Values | toYaml}}*/}}
+
 {{/* Render the templates */}}
-{{ include "bjw-s.common.loader.generate" . }}
+{{ include "bjw-s.common.loader.generate" $ctx }}
+

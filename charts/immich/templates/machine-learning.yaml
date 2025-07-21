@@ -1,44 +1,42 @@
-{{- define "immich.machine-learning.hardcodedValues" -}}
-global:
-  nameOverride: machine-learning
+{{- define "immich.machine-learning.templatedValues" -}}
 
-controller:
-  strategy: RollingUpdate
-
-service:
+strategy: RollingUpdate
+replicas: 1
+containers:
   main:
     enabled: true
-    primary: true
-    type: ClusterIP
     ports:
-      http:
-        enabled: true
-        primary: true
-        port: 3003
+      - name: http
+        containerPort: 3003
         protocol: HTTP
-
-probes:
-  liveness: &probes
-    enabled: true
-    custom: true
-    spec:
-      httpGet:
-        path: /ping
-        port: http
-      initialDelaySeconds: 0
-      periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 3
-  readiness: *probes
-  startup:
-    enabled: true
-    custom: true
-    spec:
-      httpGet:
-        path: /ping
-        port: http
-      initialDelaySeconds: 0
-      periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 60
+    image:
+      repository: ghcr.io/immich-app/immich-machine-learning
+      tag: "{{ .Values.image.tag }}"
+      pullPolicy: IfNotPresent
+    env:
+      TRANSFORMERS_CACHE: /cache
+    probes:
+      liveness: &probes
+        enabled: true
+        custom: true
+        spec:
+          httpGet:
+            path: /ping
+            port: http
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 3
+      readiness: *probes
+      startup:
+        enabled: true
+        custom: true
+        spec:
+          httpGet:
+            path: /ping
+            port: http
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 60
 {{- end }}
