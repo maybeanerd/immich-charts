@@ -81,13 +81,26 @@ persistence:
 #     tls: []
 
 rawResources:
+  psql-images:
+    apiVersion: postgresql.cnpg.io/v1
+    kind: ImageCatalog
+    spec:
+      spec:
+        images:
+          - major: 17
+            image: ghcr.io/tensorchord/vchord-postgres:pg17-v0.4.3
+
   psql:
     enabled: false
     apiVersion: postgresql.cnpg.io/v1
     kind: Cluster
     spec:
       spec:
-        imageName: ghcr.io/tensorchord/vchord-postgres:pg17-v0.4.3
+        imageCatalogRef:
+          apiGroup: postgresql.cnpg.io
+          kind: ImageCatalog
+          name: '{{ .Release.Name }}-psql-images'
+          major: 17
         instances: 1
         postgresql:
           shared_preload_libraries:
