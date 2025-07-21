@@ -80,17 +80,17 @@ persistence:
 #     tls: []
 
 rawResources:
-  pgvecto-rs:
+  psql:
     enabled: false
     apiVersion: postgresql.cnpg.io/v1
     kind: Cluster
     spec:
       spec:
-        imageName: ghcr.io/tensorchord/cloudnative-pgvecto.rs:16-v0.4.0
+        imageName: ghcr.io/tensorchord/vchord-postgres:pg17-v0.4.3
         instances: 1
         postgresql:
           shared_preload_libraries:
-            - "vectors.so"
+            - "vchord.so"
         managed:
           roles:
             - name: immich
@@ -103,12 +103,10 @@ rawResources:
             secret:
               name: immich-psql
             postInitSQL:
-              - CREATE EXTENSION IF NOT EXISTS "vectors";
-              - CREATE EXTENSION IF NOT EXISTS "cube" CASCADE;
-              - CREATE EXTENSION IF NOT EXISTS "earthdistance" CASCADE;
+              - CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
         storage:
-          size: 4Gi
-          # storageClass: immich-postgres
+          size: 8Gi
+          # storageClass: ''
 
   redis:
     enabled: false
