@@ -10,6 +10,16 @@ image:
   tag: v1.135.3
 
 immich:
+  # env:
+  #   REDIS_HOSTNAME: 'immich-redis.app-gallery.svc.cluster.local'
+  #   DB_HOSTNAME: "shared-ha.infra-psql.svc.cluster.local"
+  #   DB_USERNAME: "immich"
+  #   DB_DATABASE_NAME: "immich"
+  #   DB_PASSWORD:
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: immich-psql
+  #         key: password
   metrics:
     enabled: true
   # TODO move to be managed in common values

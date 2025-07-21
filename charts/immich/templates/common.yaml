@@ -88,7 +88,7 @@ DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
 {{- end }}
 
 {{- $ctx := deepCopy . -}}
-{{- $containersEnvs := include "immich.common.templatedEnvs" . | fromYaml | dict "env" | dict "main" | dict "containers" -}}
+{{- $containersEnvs := include "immich.common.templatedEnvs" . | fromYaml | merge (dig "immich" "env" (dict) $ctx.Values) | dict "env" | dict "main" | dict "containers" -}}
 
 {{/*{{ $containersEnvs | toYaml}}*/}}
 
