@@ -1,0 +1,43 @@
+{{- define "immich.machine-learning.templatedValues" -}}
+
+strategy: RollingUpdate
+replicas: 1
+containers:
+  main:
+    enabled: true
+    ports:
+      - name: http
+        containerPort: 3003
+        protocol: TCP
+    image:
+      repository: ghcr.io/immich-app/immich-machine-learning
+      tag: "{{ .Values.image.tag }}{{ with .Values.image.mlFlavor }}-{{ . }}{{ end }}"
+      pullPolicy: IfNotPresent
+    env:
+      TRANSFORMERS_CACHE: /cache
+      HF_HOME: /cache/huggingface
+    probes:
+      liveness: &probes
+        enabled: true
+        custom: true
+        spec:
+          httpGet:
+            path: /ping
+            port: http
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 3
+      readiness: *probes
+      startup:
+        enabled: true
+        custom: true
+        spec:
+          httpGet:
+            path: /ping
+            port: http
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 60
+{{- end }}
