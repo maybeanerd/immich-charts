@@ -35,11 +35,10 @@ immich:
 
 controllers:
   server:
-    enabled: true
-    # containers:
-    #   main: {}
+    containers:
+      main: {}
   machine-learning:
-    enabled: true
+    # enabled: false
     containers:
       main: {}
         # resources:
@@ -73,56 +72,61 @@ persistence:
 #           - path: "/"
 #             service:
 #               identifier: server
-#     # tls: []
+#     tls: []
 
 rawResources:
-  redis:
-    apiVersion: redis.redis.opstreelabs.in/v1beta2
-    kind: Redis
-    spec:
-      kubernetesConfig:
-        image: 'quay.io/opstree/redis:v7.0.5'
-        imagePullPolicy: IfNotPresent
-      redisExporter:
-        enabled: true
-        image: 'quay.io/opstree/redis-exporter:v1.44.0'
-        imagePullPolicy: IfNotPresent
-      storage:
-        volumeClaimTemplate:
-          spec:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: 10Gi
-            # storageClassName: ''
   psql:
+    enabled: false
     apiVersion: postgresql.cnpg.io/v1
     kind: Cluster
     spec:
-      imageName: ghcr.io/tensorchord/cloudnative-pgvecto.rs:16-v0.4.0
-      instances: 1
-      postgresql:
-        shared_preload_libraries:
-          - "vectors.so"
-      managed:
-        roles:
-          - name: immich
-            superuser: true
-            login: true
-      bootstrap:
-        initdb:
-          database: immich
-          owner: immich
-          secret:
-            name: immich-psql
-          postInitSQL:
-            - CREATE EXTENSION IF NOT EXISTS "vectors";
-            - CREATE EXTENSION IF NOT EXISTS "cube" CASCADE;
-            - CREATE EXTENSION IF NOT EXISTS "earthdistance" CASCADE;
-      storage:
-        size: 4Gi
-        # storageClass: immich-postgres
+      spec:
+        imageName: ghcr.io/tensorchord/cloudnative-pgvecto.rs:16-v0.4.0
+        instances: 1
+        postgresql:
+          shared_preload_libraries:
+            - "vectors.so"
+        managed:
+          roles:
+            - name: immich
+              superuser: true
+              login: true
+        bootstrap:
+          initdb:
+            database: immich
+            owner: immich
+            secret:
+              name: immich-psql
+            postInitSQL:
+              - CREATE EXTENSION IF NOT EXISTS "vectors";
+              - CREATE EXTENSION IF NOT EXISTS "cube" CASCADE;
+              - CREATE EXTENSION IF NOT EXISTS "earthdistance" CASCADE;
+        storage:
+          size: 4Gi
+          # storageClass: immich-postgres
+
+  redis:
+    enabled: false
+    apiVersion: redis.redis.opstreelabs.in/v1beta2
+    kind: Redis
+    spec:
+      spec:
+        kubernetesConfig:
+          image: 'quay.io/opstree/redis:v7.0.5'
+          imagePullPolicy: IfNotPresent
+        redisExporter:
+          enabled: true
+          image: 'quay.io/opstree/redis-exporter:v1.44.0'
+          imagePullPolicy: IfNotPresent
+        storage:
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 10Gi
+              # storageClassName: ''
 
 # Dependencies
 
