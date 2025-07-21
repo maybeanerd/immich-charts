@@ -66,6 +66,51 @@ service:
         port: 3003
         protocol: HTTP
 
+
+rawResources:
+  psql:
+    enabled: false
+    apiVersion: postgresql.cnpg.io/v1
+    kind: Cluster
+    spec:
+      spec:
+        imageCatalogRef:
+          apiGroup: postgresql.cnpg.io
+          kind: ImageCatalog
+          name: '{{ .Release.Name }}-vchord-images'
+          major: 17
+        instances: 1
+        postgresql:
+          shared_preload_libraries:
+            - "vchord.so"
+        managed:
+          roles:
+            - name: immich
+              superuser: true
+              login: true
+        bootstrap:
+          initdb:
+            database: immich
+            owner: immich
+            secret:
+              name: immich-psql
+            postInitSQL:
+              - CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
+        storage:
+          size: 8Gi
+          # storageClass: ''
+
+  # use ImageCatalog since vchord image tag does not have pg major version directly `:17`
+  vchord-images:
+    enabled: '{{ .Values.rawResources.psql.enabled }}'
+    apiVersion: postgresql.cnpg.io/v1
+    kind: ImageCatalog
+    spec:
+      spec:
+        images:
+          - major: 17
+            image: ghcr.io/tensorchord/vchord-postgres:pg17-v0.4.3
+
 {{- end -}}
 
 {{- define "immich.common.templatedEnvs" -}}

@@ -53,19 +53,18 @@ persistence:
      size: 100Gi
      nameOverride: ''
      storageClass: ''
-   # external-1:
-   #   type: persistentVolumeClaim
-   #   accessMode: ReadWriteOnce
-   #   size: 100Gi
-   #   advancedMounts:
-   #     server:
-   #       main:
-   #         - path: /usr/src/app/external-1
    # Optional: Set this to pvc to avoid downloading the ML models every start.
    # machine-learning-cache:
    #   enabled: true
    #   accessMode: ReadWriteOnce
    #   size: 10Gi
+   # external-1:
+   #   type: persistentVolumeClaim
+   #   existingClaim: ''
+   #   advancedMounts:
+   #     server:
+   #       main:
+   #         - path: /usr/src/app/external-1
 
 # ingress:
 #   main:
@@ -81,47 +80,19 @@ persistence:
 #     tls: []
 
 rawResources:
-  psql-images:
-    enabled: '{{ .Values.rawResources.psql.enabled }}'
-    apiVersion: postgresql.cnpg.io/v1
-    kind: ImageCatalog
-    spec:
-      spec:
-        images:
-          - major: 17
-            image: ghcr.io/tensorchord/vchord-postgres:pg17-v0.4.3
-
   psql:
     enabled: false
     apiVersion: postgresql.cnpg.io/v1
     kind: Cluster
     spec:
       spec:
-        imageCatalogRef:
-          apiGroup: postgresql.cnpg.io
-          kind: ImageCatalog
-          name: '{{ .Release.Name }}-psql-images'
-          major: 17
-        instances: 1
-        postgresql:
-          shared_preload_libraries:
-            - "vchord.so"
-        managed:
-          roles:
-            - name: immich
-              superuser: true
-              login: true
+        # storage:
+        #   size: 8Gi
+        #   storageClass: ''
         bootstrap:
           initdb:
-            database: immich
-            owner: immich
             secret:
               name: immich-psql
-            postInitSQL:
-              - CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
-        storage:
-          size: 8Gi
-          # storageClass: ''
 
   redis:
     enabled: false
