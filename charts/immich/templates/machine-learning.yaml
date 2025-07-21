@@ -15,6 +15,7 @@ containers:
       pullPolicy: IfNotPresent
     env:
       TRANSFORMERS_CACHE: /cache
+      HF_HOME: /cache/huggingface
     probes:
       liveness: &probes
         enabled: true

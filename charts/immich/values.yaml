@@ -82,6 +82,7 @@ persistence:
 
 rawResources:
   psql-images:
+    enabled: '{{ .Values.rawResources.psql.enabled }}'
     apiVersion: postgresql.cnpg.io/v1
     kind: ImageCatalog
     spec:
