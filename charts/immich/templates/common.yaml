@@ -25,12 +25,6 @@ persistence:
         main:
           - path: /usr/src/app/upload
 
-  immich-external:
-    type: persistentVolumeClaim
-    advancedMounts:
-      server:
-        main:
-          - path: /usr/src/app/external
   machine-learning-cache:
     enabled: false
     type: persistentVolumeClaim

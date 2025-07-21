@@ -52,14 +52,19 @@ persistence:
      size: 100Gi
      nameOverride: ''
      storageClass: ''
-   immich-external:
-     accessMode: ReadWriteOnce
-     size: 100Gi
-  # Optional: Set this to pvc to avoid downloading the ML models every start.
-  # machine-learning-cache:
-  #   enabled: true
-  #   accessMode: ReadWriteOnce
-  #   size: 10Gi
+   # immich-external-1:
+   #   type: persistentVolumeClaim
+   #   accessMode: ReadWriteOnce
+   #   size: 100Gi
+   #   advancedMounts:
+   #     server:
+   #       main:
+   #         - path: /usr/src/app/external-1
+   # Optional: Set this to pvc to avoid downloading the ML models every start.
+   # machine-learning-cache:
+   #   enabled: true
+   #   accessMode: ReadWriteOnce
+   #   size: 10Gi
 
 # ingress:
 #   main:
