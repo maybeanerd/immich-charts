@@ -11,7 +11,7 @@ containers:
         protocol: TCP
     image:
       repository: ghcr.io/immich-app/immich-machine-learning
-      tag: "{{ .Values.image.tag }}"
+      tag: "{{ .Values.image.tag }}{{ with .Values.image.mlFlavor }}-{{ . }}{{ end }}"
       pullPolicy: IfNotPresent
     env:
       TRANSFORMERS_CACHE: /cache
