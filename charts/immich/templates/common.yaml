@@ -1,7 +1,7 @@
 ---
 {{- include "bjw-s.common.loader.init" . }}
 
-{{- define "immich.hardcodedValues" -}}
+{{- define "immich.templatedValues" -}}
 # Set the nameOverride based on the release name if no override has been set
 {{ if not .Values.global.nameOverride }}
 global:
@@ -73,7 +73,6 @@ service:
         protocol: HTTP
 
 {{- end -}}
-{{- $_ := mergeOverwrite .Values (include "immich.hardcodedValues" . | fromYaml) -}}
 
 {{- define "immich.common.templatedEnvs" -}}
 {{- if .Values.immich.configuration }}
@@ -88,10 +87,14 @@ DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
 {{- end }}
 
 {{- $ctx := deepCopy . -}}
+
 {{- $containersEnvs := include "immich.common.templatedEnvs" . | fromYaml | merge (dig "immich" "env" (dict) $ctx.Values) | dict "env" | dict "main" | dict "containers" -}}
+
+{{- $_ := include "immich.templatedValues" . | fromYaml | merge $ctx.Values -}}
 
 {{- $_ = include "immich.server.templatedValues" . | fromYaml | merge (deepCopy $containersEnvs) | dict "server" | dict "controllers" | merge $ctx.Values -}}
 {{- $_ = include "immich.machine-learning.templatedValues" . | fromYaml | merge $containersEnvs | dict "machine-learning" | dict "controllers" | merge $ctx.Values -}}
+
 
 {{/* Render the templates */}}
 {{ include "bjw-s.common.loader.generate" $ctx }}

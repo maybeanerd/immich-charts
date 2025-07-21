@@ -75,7 +75,7 @@ persistence:
 #     tls: []
 
 rawResources:
-  psql:
+  pgvecto-rs:
     enabled: false
     apiVersion: postgresql.cnpg.io/v1
     kind: Cluster
