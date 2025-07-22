@@ -170,7 +170,7 @@ persistence:
     name: "{{ .Release.Name }}-immich-config"
     globalMounts:
       - path: /config
-        readOnly: true
+        readOnly: false
   library:
     type: persistentVolumeClaim
     # storageClass: "" # provide your storage class
