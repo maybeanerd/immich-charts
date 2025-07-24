@@ -175,7 +175,7 @@ persistence:
     type: persistentVolumeClaim
     # storageClass: "" # provide your storage class
     accessMode: ReadWriteMany
-    size: 1Ti
+    size: 10Gi
     advancedMounts:
       server:
         main:
@@ -184,7 +184,7 @@ persistence:
     type: persistentVolumeClaim
     # storageClass: "" # provide your storage class
     accessMode: ReadWriteMany
-    size: 1Ti
+    size: 10Gi
     advancedMounts:
       server:
         main:
