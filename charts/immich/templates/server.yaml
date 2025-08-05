@@ -81,7 +81,7 @@ persistence:
 {{- end }}
   library:
     enabled: true
-    mountPath: /usr/src/app/upload
+    mountPath: /data
     existingClaim: {{ .Values.immich.persistence.library.existingClaim }}
 {{ if .Values.immich.persistence.external.enabled }}
   external:
