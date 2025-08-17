@@ -12,7 +12,7 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     container:
-      image: alpine/helm:3.18.4@sha256:e7ecbf4a200dea73d64bfb8cb0936829164945f2b4d02a0274093073ee8d264f
+      image: alpine/helm:3.18.5@sha256:ba9835b141a6f35b8b316bc6072e9f42b3addd8cbebab1dfc516ef0ed737b04c
     steps:
       - name: checkout pr head
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
