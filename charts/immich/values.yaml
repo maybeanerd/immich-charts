@@ -59,7 +59,7 @@ postgresql:
   image:
     registry: ghcr.io
     repository: immich-app/postgres
-    tag: 14-vectorchord0.3.0-pgvectors0.3.0
+    tag: 17-vectorchord0.3.0-pgvectors0.3.0
   global:
     postgresql:
       auth:
