@@ -50,4 +50,4 @@ jobs:
 
       - if: ${{ steps.version.outputs.should_release == 'true' }}
         name: Push Chart
-        run: helm push .cr-release-packages/immich-*.tgz oci://ghcr.io/${{ github.repository }}
+        run: helm push .cr-release-packages/*.tgz oci://ghcr.io/${{ github.repository }}
