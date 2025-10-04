@@ -6,7 +6,7 @@ version: 0.9.42
 home: https://immich.app/
 icon: https://raw.githubusercontent.com/immich-app/immich/main/design/immich-logo.svg
 sources:
-  - https://github.com/immich-app/immich-charts/tree/main/charts/immich
+  - https://github.com/maybeanerd/immich-charts/tree/main/charts/immich
   - https://github.com/immich-app/immich
 maintainers:
   - name: sebastian
