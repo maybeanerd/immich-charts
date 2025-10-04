@@ -1,8 +1,8 @@
 # Disclaimer
 
-This is a soft fork from the [official immich-charts](https://github.com/immich-app/immich-charts) repo. The aim is to provide a better developer experience, more granular releases (including all immich versions), and a more comprehensive chart (including DB, e.g.)
+This is a soft fork from the [official immich-charts](https://github.com/maybeanerd/immich-charts) repo. The aim is to provide a better developer experience, more granular releases (including all immich versions), and a more comprehensive chart (including DB, e.g.)
 
-It was created based on the discussions in the following issue: https://github.com/immich-app/immich-charts/issues/68#issuecomment-2291250875
+It was created based on the discussions in the following issue: https://github.com/maybeanerd/immich-charts/issues/68#issuecomment-2291250875
 
 THIS IS A WIP.
 
