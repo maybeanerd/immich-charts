@@ -12,10 +12,10 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     container:
-      image: alpine/helm:3.18.3@sha256:e1d0398b27ef1bfab2709f2df998824a6592705655eabaca96125c287942f6ad
+      image: alpine/helm:3.19.0@sha256:7893f5629909b3f92f739f16c985eb536bc43ac7a332bee6ba59cec56c660a6d
     steps:
       - name: checkout pr head
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
 
@@ -31,7 +31,7 @@ jobs:
         run: helm template immich charts/immich | tee charts/immich/build/manifest.yaml
 
       - name: checkout main
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
           ref: main
@@ -46,7 +46,7 @@ jobs:
         run: helm template immich main/charts/immich | tee main/charts/immich/build/manifest.yaml
 
       - name: create diff comment
-        uses: int128/diff-action@4919d5826a9bc511508659f6eeb6afff2f21053e # v1.55.0
+        uses: int128/diff-action@24c9b9d1611bd1a66416df608b4411dc991acb88 # v1.56.0
         with:
           base: main/charts/immich/build
           head: charts/immich/build
