@@ -23,13 +23,10 @@ controllers:
         ports:
           - name: http
             containerPort: 2283
-            protocol: HTTP
           - name: metrics-api
             containerPort: 8081
-            protocol: HTTP
           - name: metrics-ms
             containerPort: 8082
-            protocol: HTTP
         image:
           repository: ghcr.io/immich-app/immich-server
           tag: "{{ .Values.image.tag}}"
@@ -103,7 +100,6 @@ controllers:
         ports:
           - name: http
             containerPort: 3003
-            protocol: HTTP
         image:
           repository: ghcr.io/immich-app/immich-machine-learning
           tag: "{{ .Values.image.tag}}"
