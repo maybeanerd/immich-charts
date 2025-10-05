@@ -224,6 +224,8 @@ postgresql:
         value: "HDD" # TODO this should be configurable on top level somewhere
       - name: POSTGRES_DB
         value: immich
+      - name: POSTGRESQL_STARTUP_TIMEOUT
+        value: "1256" # time in seconds, default is 60
     customLivenessProbe:
       tcpSocket:
         port: tcp-postgresql
