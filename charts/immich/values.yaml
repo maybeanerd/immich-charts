@@ -241,7 +241,18 @@ postgresql:
       storageClass: null # provide your storage class
     initdb:
       scripts:
-        create-extensions.sql: |
+        # This should be unnecessary as we set the POSTGRES_DB env var, but for some reason sometimes the DB is not created
+        01-create-db.sql: |
+          DO $$
+          BEGIN
+            IF NOT EXISTS (
+              SELECT FROM pg_database WHERE datname = 'immich'
+            ) THEN
+              CREATE DATABASE immich OWNER immich;
+            END IF;
+          END
+          $$;
+        02-create-extensions.sql: |
           CREATE EXTENSION cube;
           CREATE EXTENSION earthdistance;
           CREATE EXTENSION vectors;
