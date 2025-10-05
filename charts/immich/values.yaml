@@ -11,7 +11,7 @@ image:
 immich:
   # configuration is immich-config.json converted to yaml
   # ref: https://immich.app/docs/install/config-file/
-  configuration:
+  configuration: {}
     # trash:
     #   enabled: false
     #   days: 30
@@ -47,9 +47,7 @@ controllers:
           DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
           IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
           IMMICH_TELEMETRY_INCLUDE: "all"
-          # {{- if .Values.immich.configuration }}
-          #    IMMICH_CONFIG_FILE: /config/immich-config.yaml
-          # {{- end }}
+          IMMICH_CONFIG_FILE: /config/immich-config.yaml
         probes:
           liveness:
             enabled: true
