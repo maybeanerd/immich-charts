@@ -29,6 +29,8 @@ $ helm install --create-namespace --namespace immich immich oci://ghcr.io/immich
 
 You should not copy the full values.yaml from this repository. Only set the values that you want to override.
 
+# TODO adjust the config docs here based on comments in PR
+
 There are a few things that you are required to configure in your values.yaml before installing the chart:
 * You need to separately create a PVC for your library volume and configure `immich.persistence.library.existingClaim` to reference that PVC
 * You need to make sure that Immich has access to a redis and postgresql instance. 
