@@ -234,7 +234,7 @@ postgresql:
         port: tcp-postgresql
       failureThreshold: 256
     persistence:
-      enabled: false
+      enabled: true
       accessMode: ReadWriteOnce
       size: 100Gi
       storageClass: # provide your storage class
