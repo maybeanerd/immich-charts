@@ -257,6 +257,9 @@ postgresql:
 redis:
   enabled: true
   architecture: standalone
+  image:
+    # Using bitnamilegacy as bitnami does not provide new tagged redis images anymore. TODO: migrate to a new redis provider at some point
+    repository: bitnamilegacy/redis
   master:
     persistence:
       enabled: false
