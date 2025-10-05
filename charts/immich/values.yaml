@@ -215,7 +215,7 @@ postgresql:
       auth:
         username: immich
         database: immich
-        password: immich
+        password: null
     security:
       allowInsecureImages: true
   primary:
