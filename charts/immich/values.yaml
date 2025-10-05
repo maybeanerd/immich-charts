@@ -10,7 +10,15 @@ image:
   tag: v2.0.1
 
 immich:
-  configuration: {}
+  # configuration is immich-config.json converted to yaml
+  # ref: https://immich.app/docs/install/config-file/
+  configuration:
+    # trash:
+    #   enabled: false
+    #   days: 30
+    # storageTemplate:
+    #   enabled: true
+    #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
 
 controllers:
   server:
@@ -78,18 +86,6 @@ controllers:
               timeoutSeconds: 1
               failureThreshold: 30
 
-      # TODO move to be managed in common values
-      # configuration is immich-config.json converted to yaml
-      # ref: https://immich.app/docs/install/config-file/
-      #
-      # configuration:
-      # {}
-      # trash:
-      #   enabled: false
-      #   days: 30
-      # storageTemplate:
-      #   enabled: true
-      #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
   machine-learning:
     enabled: true
     strategy: RollingUpdate
