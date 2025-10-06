@@ -163,6 +163,7 @@ persistence:
         readOnly: false
   library:
     type: persistentVolumeClaim
+    # existingClaim: "name-of-existing-claim" # Set an existing claim here to use it instead of creating a new one
     storageClass: null # provide your storage class
     accessMode: ReadWriteMany
     size: 10Gi
@@ -172,6 +173,7 @@ persistence:
           - path: /usr/src/app/upload
   external:
     type: persistentVolumeClaim
+    # existingClaim: "name-of-existing-claim" # Set an existing claim here to use it instead of creating a new one
     storageClass: null # provide your storage class
     accessMode: ReadWriteMany
     size: 10Gi
@@ -182,6 +184,7 @@ persistence:
   machine-learning-cache:
     # Optional: Set this to emptyDir to stop caching between pod restarts
     type: persistentVolumeClaim
+    # existingClaim: "name-of-existing-claim" # Set an existing claim here to use it instead of creating a new one
     storageClass: null # provide your storage class
     accessMode: ReadWriteMany
     size: 10Gi
@@ -238,6 +241,7 @@ postgresql:
       failureThreshold: 256
     persistence:
       enabled: true
+      # existingClaim: "name-of-existing-claim" # Set an existing claim here to use it instead of creating a new one
       accessMode: ReadWriteOnce
       size: 100Gi
       storageClass: null # provide your storage class
