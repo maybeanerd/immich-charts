@@ -151,6 +151,7 @@ service:
     enabled: true
     primary: true
     type: ClusterIP
+    controller: server
     ports:
       http:
         enabled: true
