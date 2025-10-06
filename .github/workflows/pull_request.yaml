@@ -23,12 +23,12 @@ jobs:
         run: helm dependency build charts/immich
 
       - name: lint helm chart
-        run: helm lint charts/immich
+        run: helm lint charts/immich --set persistence.library.storageClass=test-pvc-provisioner --set persistence.external.storageClass=test-pvc-provisioner --set persistence.machine-learning-cache.storageClass=test-pvc-provisioner --set postgresql.primary.persistence.storageClass=test-pvc-provisioner --set postgresql.global.postgresql.auth.password=test-password
 
       - name: prepare
         run: mkdir -p charts/immich/build
       - name: create full manifest from pr head
-        run: helm template immich charts/immich | tee charts/immich/build/manifest.yaml
+        run: helm template immich charts/immich --set persistence.library.storageClass=test-pvc-provisioner --set persistence.external.storageClass=test-pvc-provisioner --set persistence.machine-learning-cache.storageClass=test-pvc-provisioner --set postgresql.primary.persistence.storageClass=test-pvc-provisioner --set postgresql.global.postgresql.auth.password=test-password | tee charts/immich/build/manifest.yaml
 
       - name: checkout main
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
@@ -43,7 +43,7 @@ jobs:
       - name: prepare
         run: mkdir -p main/charts/immich/build
       - name: create full manifest from main
-        run: helm template immich main/charts/immich | tee main/charts/immich/build/manifest.yaml
+        run: helm template immich main/charts/immich --set persistence.library.storageClass=test-pvc-provisioner --set persistence.external.storageClass=test-pvc-provisioner --set persistence.machine-learning-cache.storageClass=test-pvc-provisioner --set postgresql.primary.persistence.storageClass=test-pvc-provisioner --set postgresql.global.postgresql.auth.password=test-password | tee main/charts/immich/build/manifest.yaml
 
       - name: create diff comment
         uses: int128/diff-action@24c9b9d1611bd1a66416df608b4411dc991acb88 # v1.56.0
