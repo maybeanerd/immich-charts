@@ -241,6 +241,11 @@ postgresql:
       accessMode: ReadWriteOnce
       size: 100Gi
       storageClass: null # provide your storage class
+    resources:
+      requests:
+        memory: "512Mi"
+      limits:
+        memory: "2Gi"
     initdb:
       scripts:
         # This should be unnecessary as we set the POSTGRES_DB env var, but for some reason sometimes the DB is not created
