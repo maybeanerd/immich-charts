@@ -180,11 +180,11 @@ persistence:
         main:
           - path: /usr/src/app/external
   machine-learning-cache:
-    # Optional: Set this to persistentVolumeClaim to avoid downloading the ML models every start.
-    type: emptyDir
-    # storageClass: "" # provide your storage class
-    # accessMode: ReadWriteMany
-    # size: 10Gi
+    # Optional: Set this to emptyDir to stop caching between pod restarts
+    type: persistentVolumeClaim
+    storageClass: null # provide your storage class
+    accessMode: ReadWriteMany
+    size: 10Gi
     advancedMounts:
       machine-learning:
         main:
