@@ -20,7 +20,6 @@ immich:
     # storageTemplate:
     #   enabled: true
     #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
-  enableMetrics: false
 
 controllers:
   server:
@@ -159,11 +158,11 @@ service:
         port: 2283
         protocol: HTTP
       metrics-api:
-        enabled: { { .Values.immich.enableMetrics } }
+        enabled: false
         port: 8081
         protocol: HTTP
       metrics-ms:
-        enabled: { { .Values.immich.enableMetrics } }
+        enabled: false
         port: 8082
         protocol: HTTP
 
