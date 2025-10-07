@@ -146,6 +146,27 @@ controllers:
 podAnnotations:
   checksum/config: "{{ .Values.immich.configuration | toYaml | sha256sum }}"
 
+service:
+  server:
+    enabled: true
+    primary: true
+    type: ClusterIP
+    controller: server
+    ports:
+      http:
+        enabled: true
+        primary: true
+        port: 2283
+        protocol: HTTP
+      metrics-api:
+        enabled: false
+        port: 8081
+        protocol: HTTP
+      metrics-ms:
+        enabled: false
+        port: 8082
+        protocol: HTTP
+
 serviceMonitor:
   server:
     serviceName: server
