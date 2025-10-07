@@ -1,4 +1,3 @@
-{{- if .Values.immich.configuration }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -12,4 +11,3 @@ metadata:
 data:
   immich-config.yaml: |
 {{- .Values.immich.configuration | toYaml | nindent 4 }}
-{{- end }}
