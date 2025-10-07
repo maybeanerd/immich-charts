@@ -50,8 +50,9 @@ controllers:
           DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
           IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
           IMMICH_TELEMETRY_INCLUDE: "all"
-          # TODO remove this if config is undefined
+          {{- if .Values.immich.configuration }}
           IMMICH_CONFIG_FILE: /config/immich-config.yaml
+          {{- end }}
         probes:
           liveness:
             enabled: true
