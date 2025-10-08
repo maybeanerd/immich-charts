@@ -3,6 +3,7 @@ name: Deploy to Pages
 
 on:
   release:
+  # TODO remove, only here for testing
   pull_request:
     branches: main
 
@@ -33,7 +34,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
           path: './charts/immich'
       - name: Deploy to GitHub Pages
         id: deployment
