@@ -192,7 +192,7 @@ persistence:
     advancedMounts:
       server:
         main:
-          - path: /usr/src/app/upload
+          - path: /data
   external:
     type: persistentVolumeClaim
     # existingClaim: "name-of-existing-claim" # Set an existing claim here to use it instead of creating a new one
