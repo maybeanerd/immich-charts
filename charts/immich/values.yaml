@@ -156,15 +156,15 @@ service:
       http:
         enabled: true
         primary: true
-        port: http
+        port: 2283
         protocol: HTTP
       metrics-api:
         enabled: false
-        port: metrics-api
+        port: 8081
         protocol: HTTP
       metrics-ms:
         enabled: false
-        port: metrics-ms
+        port: 8082
         protocol: HTTP
   machine-learning:
     enabled: true
@@ -175,7 +175,7 @@ service:
       http:
         enabled: true
         primary: true
-        port: http
+        port: 3003
         protocol: HTTP
 
 serviceMonitor:
