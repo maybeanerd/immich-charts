@@ -166,6 +166,17 @@ service:
         enabled: false
         port: 8082
         protocol: HTTP
+  machine-learning:
+      enabled: true
+      primary: true
+      type: ClusterIP
+      controller: machine-learning
+      ports:
+        http:
+          enabled: true
+          primary: true
+          port: 3003
+          protocol: HTTP
 
 serviceMonitor:
   server:
