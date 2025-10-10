@@ -13,7 +13,8 @@ image:
 immich:
   # configuration is immich-config.json converted to yaml
   # ref: https://immich.app/docs/install/config-file/
-  configuration: {}
+  configuration:
+    {}
     # trash:
     #   enabled: false
     #   days: 30
@@ -38,17 +39,17 @@ controllers:
             containerPort: 8082
         image:
           repository: ghcr.io/immich-app/immich-server
-          tag: "{{ .Values.image.tag}}"
+          tag: '{{ .Values.image.tag}}'
           pullPolicy: IfNotPresent
         env:
           REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
-          DB_HOSTNAME: "{{ .Release.Name }}-postgresql"
-          DB_USERNAME: "{{ .Values.postgresql.global.postgresql.auth.username }}"
-          DB_DATABASE_NAME: "{{ .Values.postgresql.global.postgresql.auth.database }}"
+          DB_HOSTNAME: '{{ .Release.Name }}-postgresql'
+          DB_USERNAME: '{{ .Values.postgresql.global.postgresql.auth.username }}'
+          DB_DATABASE_NAME: '{{ .Values.postgresql.global.postgresql.auth.database }}'
           # -- You should provide your own secret outside of this helm-chart and use `postgresql.global.postgresql.auth.existingSecret` to provide credentials to the postgresql instance
-          DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
+          DB_PASSWORD: '{{ .Values.postgresql.global.postgresql.auth.password }}'
           IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
-          IMMICH_TELEMETRY_INCLUDE: "all"
+          IMMICH_TELEMETRY_INCLUDE: 'all'
           IMMICH_CONFIG_FILE: /config/immich-config.yaml
         probes:
           liveness:
@@ -97,15 +98,15 @@ controllers:
             containerPort: 3003
         image:
           repository: ghcr.io/immich-app/immich-machine-learning
-          tag: "{{ .Values.image.tag}}"
+          tag: '{{ .Values.image.tag}}'
           pullPolicy: IfNotPresent
         env:
           REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
-          DB_HOSTNAME: "{{ .Release.Name }}-postgresql"
-          DB_USERNAME: "{{ .Values.postgresql.global.postgresql.auth.username }}"
-          DB_DATABASE_NAME: "{{ .Values.postgresql.global.postgresql.auth.database }}"
+          DB_HOSTNAME: '{{ .Release.Name }}-postgresql'
+          DB_USERNAME: '{{ .Values.postgresql.global.postgresql.auth.username }}'
+          DB_DATABASE_NAME: '{{ .Values.postgresql.global.postgresql.auth.database }}'
           # -- You should provide your own secret outside of this helm-chart and use `postgresql.global.postgresql.auth.existingSecret` to provide credentials to the postgresql instance
-          DB_PASSWORD: "{{ .Values.postgresql.global.postgresql.auth.password }}"
+          DB_PASSWORD: '{{ .Values.postgresql.global.postgresql.auth.password }}'
           IMMICH_MACHINE_LEARNING_URL: '{{ printf "http://%s-machine-learning:3003" .Release.Name }}'
           TRANSFORMERS_CACHE: /cache
         probes:
@@ -144,7 +145,7 @@ controllers:
               failureThreshold: 60
 
 podAnnotations:
-  checksum/config: "{{ .Values.immich.configuration | toYaml | sha256sum }}"
+  checksum/config: '{{ .Values.immich.configuration | toYaml | sha256sum }}'
 
 service:
   server:
@@ -156,27 +157,27 @@ service:
       http:
         enabled: true
         primary: true
-        port: 2283
+        port: http
         protocol: HTTP
       metrics-api:
         enabled: false
-        port: 8081
+        port: metrics-api
         protocol: HTTP
       metrics-ms:
         enabled: false
-        port: 8082
+        port: metrics-ms
         protocol: HTTP
   machine-learning:
-      enabled: true
-      primary: true
-      type: ClusterIP
-      controller: machine-learning
-      ports:
-        http:
-          enabled: true
-          primary: true
-          port: 3003
-          protocol: HTTP
+    enabled: true
+    primary: true
+    type: ClusterIP
+    controller: machine-learning
+    ports:
+      http:
+        enabled: true
+        primary: true
+        port: http
+        protocol: HTTP
 
 serviceMonitor:
   server:
@@ -190,7 +191,7 @@ serviceMonitor:
 persistence:
   immich-config:
     type: configMap
-    name: "{{ .Release.Name }}-immich-config"
+    name: '{{ .Release.Name }}-immich-config'
     globalMounts:
       - path: /config
         readOnly: false
@@ -231,11 +232,11 @@ ingress:
     enabled: false
     annotations:
       # proxy-body-size is set to 0 to remove the body limit on file uploads
-      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/proxy-body-size: '0'
     hosts:
       - host: immich.local
         paths:
-          - path: "/"
+          - path: '/'
     tls: []
 
 # Dependencies
@@ -257,11 +258,11 @@ postgresql:
   primary:
     extraEnvVars:
       - name: DB_STORAGE_TYPE
-        value: "HDD" # TODO this should be configurable on top level somewhere
+        value: 'HDD' # TODO this should be configurable on top level somewhere
       - name: POSTGRES_DB
         value: immich
       - name: POSTGRESQL_STARTUP_TIMEOUT
-        value: "256" # time in seconds, default is 60
+        value: '256' # time in seconds, default is 60
     customLivenessProbe:
       tcpSocket:
         port: tcp-postgresql
@@ -280,9 +281,9 @@ postgresql:
       storageClass: null # provide your storage class
     resources:
       requests:
-        memory: "512Mi"
+        memory: '512Mi'
       limits:
-        memory: "2Gi"
+        memory: '2Gi'
     initdb:
       scripts:
         # This should be unnecessary as we set the POSTGRES_DB env var, but for some reason sometimes the DB is not created
