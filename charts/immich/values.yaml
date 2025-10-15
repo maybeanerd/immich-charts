@@ -6,7 +6,7 @@
 
 image:
   repository: ghcr.io/immich-app/immich-server
-  tag: v2.0.1
+  tag: v2.1.0
 
 # TODO provide top level configs for things like persistence, using included DB, using included redis, DB settings (such as HDD vs SSD mode)
 # Also validate them in the checks.yaml
