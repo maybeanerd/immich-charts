@@ -66,31 +66,13 @@ jobs:
             touch main/charts/immich/build/manifest-${{ matrix.example }}.yaml
           fi
 
-      - name: Generate diff
-        id: diff
-        run: |
-          diff -u main/charts/immich/build/manifest-${{ matrix.example }}.yaml charts/immich/build/manifest-${{ matrix.example }}.yaml > diff.txt || true
-          if [ -s diff.txt ]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            # Prepare diff for comment (escape and truncate if needed)
-            {
-              echo 'diff<<EOF'
-              cat diff.txt | head -n 500
-              echo EOF
-            } >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create or update comment
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Create diff comment
+        uses: int128/diff-action@c9db036f910af1c65d025ee9734f0aa2b0a47c39 # v1.58.0
         with:
-          header: example-${{ matrix.example }}
-          message: |
-            ## 📋 Example: `${{ matrix.example }}.yaml`
-
-            ${{ steps.diff.outputs.has_changes == 'true' && format('```diff\n{0}\n```', steps.diff.outputs.diff) || '_No changes detected_' }}
-
+          base: main/charts/immich/build
+          head: charts/immich/build
+          comment-header: '## 📋 Example: `${{ matrix.example }}.yaml`'
+          comment-footer: |
             <details>
             <summary>📖 About this example</summary>
 
