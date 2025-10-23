@@ -1,0 +1,30 @@
+# Example: Disabling machine learning features
+# Useful to save resources when ML features are not needed
+# Note: This disables face detection, object recognition, and smart search
+
+# Disable machine learning
+immich:
+  machineLearning:
+    enabled: false
+
+persistence:
+  library:
+    storageClass: standard
+    size: 100Gi
+  external:
+    storageClass: standard
+    size: 50Gi
+  # ML cache is automatically disabled when ML is disabled
+  machine-learning-cache:
+    storageClass: standard
+    size: 10Gi
+
+postgresql:
+  global:
+    postgresql:
+      auth:
+        password: CHANGE-ME-TO-A-SECURE-PASSWORD
+  primary:
+    persistence:
+      storageClass: standard
+      size: 50Gi
