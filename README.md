@@ -33,143 +33,131 @@ You should not copy the full values.yaml from this repository. Only set the valu
 
 This Helm chart for Immich is highly configurable. The chart uses a clean values structure where defaults are provided in templates, and users only need to override what they want to change.
 
-**See `charts/immich/values.yaml` for the full list of options and examples.**
-
 ## Quick Start
 
-### Example Configurations
+We provide tested example configurations for common scenarios. See the [examples directory](charts/immich/examples/) for detailed documentation:
 
-We provide tested example configurations for common scenarios. See the [examples directory](charts/immich/examples/) for more details.
+- **[minimal.yaml](charts/immich/examples/minimal.yaml)** - Bare minimum setup with bundled services
+- **[external-services.yaml](charts/immich/examples/external-services.yaml)** - Using external PostgreSQL and Redis
+- **[ml-disabled.yaml](charts/immich/examples/ml-disabled.yaml)** - Deployment without machine learning features
 
-**Minimal setup** (bundled database and Redis):
+Deploy an example:
 ```bash
 helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
   --namespace immich --create-namespace \
   -f https://raw.githubusercontent.com/maybeanerd/immich-charts/main/charts/immich/examples/minimal.yaml
 ```
 
-**With external services** (managed PostgreSQL and Redis):
-```bash
-kubectl create secret generic immich-db-secret --from-literal=password=your-secure-password
-helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
-  --namespace immich --create-namespace \
-  -f https://raw.githubusercontent.com/maybeanerd/immich-charts/main/charts/immich/examples/external-services.yaml
-```
-
-**Without machine learning** (saves resources):
-```bash
-helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
-  --namespace immich --create-namespace \
-  -f https://raw.githubusercontent.com/maybeanerd/immich-charts/main/charts/immich/examples/ml-disabled.yaml
-```
-
-⚠️ **Important**: These examples use placeholder values. Before deploying to production:
-- Change `CHANGE-ME-TO-A-SECURE-PASSWORD` to a secure password
-- Update `storageClass` to match your cluster's storage provisioners
-- Adjust storage sizes based on your needs
-- Update ingress hostnames from `immich.local` to your domain
+⚠️ **Important**: Examples use placeholder values. Before production deployment, update passwords, storage classes, sizes, and hostnames.
 
 ## Configuration Reference
 
-### Immich Configuration
+### Required Values
 
-| Parameter                       | Description                                                                      | Default  |
-| ------------------------------- | -------------------------------------------------------------------------------- | -------- |
-| `immich.configuration`          | Immich app configuration (see [docs](https://immich.app/docs/install/config-file/)) | `{}` |
-| `immich.monitoring.enabled`     | Enable Prometheus metrics endpoints and ServiceMonitor                           | `false`  |
-| `immich.database`               | Database connection configuration (see below)                                    | `{}` |
-| `immich.redis`                  | Redis connection configuration (see below)                                       | `{}` |
-| `immich.machineLearning.enabled`| Enable or disable ML features (face detection, object recognition, etc.)         | `true`   |
+These values **must** be configured before deployment:
 
-> **Note**: The image version is managed by the chart and should not be overridden by users.
-
-#### Monitoring Configuration (`immich.monitoring`)
-
-Enable Prometheus metrics collection:
+#### Storage Classes
+All persistent volumes require a `storageClass` matching your cluster's provisioner:
 
 ```yaml
-immich:
-  monitoring:
-    enabled: true  # Enables metrics endpoints and creates ServiceMonitor
+persistence:
+  library:
+    storageClass: "your-storage-class"  # User library (photos/videos)
+  external:
+    storageClass: "your-storage-class"  # External libraries
+  machine-learning-cache:
+    storageClass: "your-storage-class"  # ML cache (only if ML enabled)
+
+postgresql:
+  primary:
+    persistence:
+      storageClass: "your-storage-class"  # Database
 ```
 
-When enabled, this will:
-- Expose metrics on ports 8081 (API metrics) and 8082 (Microservices metrics)
-- Create a ServiceMonitor resource for Prometheus Operator
-- Allow monitoring of Immich performance and health
+Alternatively, use existing PVCs with `existingClaim`.
 
-#### Database Configuration (`immich.database`)
+#### Database Password
+Set a secure password for bundled PostgreSQL:
 
-Configure the database connection. If not specified, defaults to the bundled PostgreSQL instance.
+```yaml
+postgresql:
+  global:
+    postgresql:
+      auth:
+        password: "your-secure-password"
+        # Better: use existingSecret for production
+```
 
-> **Note**: When using an external database, set `postgresql.enabled: false` to disable the bundled PostgreSQL.
+### Interesting Values to Change
+
+#### Immich Application Settings (`immich`)
 
 ```yaml
 immich:
+  # Application configuration - see https://immich.app/docs/install/config-file/
+  configuration:
+    trash:
+      enabled: false
+      days: 30
+    storageTemplate:
+      enabled: true
+      template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+
+  # Enable/disable machine learning features
+  machineLearning:
+    enabled: true  # Set false to save resources
+
+  # Enable Prometheus metrics
+  monitoring:
+    enabled: false
+
+  # External database (disables bundled PostgreSQL)
   database:
     host: "postgres.example.com"
-    port: 5432  # optional, defaults to 5432
     username: "immich"
     name: "immich"
-    password: "password"
-    
-    # Or use a Kubernetes secret for the password:
     password:
       valueFrom:
         secretKeyRef:
           name: immich-db-secret
           key: password
-```
 
-#### Redis Configuration (`immich.redis`)
-
-Configure the Redis connection. If not specified, defaults to the bundled Redis instance.
-
-> **Note**: When using external Redis, set `redis.enabled: false` to disable the bundled Redis.
-
-```yaml
-immich:
+  # External Redis (disables bundled Redis)
   redis:
     host: "redis.example.com"
-    port: 6379  # optional, defaults to 6379
 ```
 
-#### Machine Learning Configuration (`immich.machineLearning`)
-
-Enable or disable the machine learning service. When disabled, saves resources but removes features like face detection and object recognition:
+#### Storage Sizes (`persistence`)
 
 ```yaml
-immich:
-  machineLearning:
-    enabled: false  # Set to false to disable ML features
+persistence:
+  library:
+    size: 100Gi  # Your photos/videos
+  external:
+    size: 50Gi   # External libraries
+  machine-learning-cache:
+    size: 10Gi   # ML models cache
 ```
 
-The ML service URL is automatically configured to use the internal service and cannot be overridden. This section can be extended in the future with additional ML-related settings.
-
-### Persistence
-
-| Parameter                                  | Description                                    | Default                |
-| ------------------------------------------ | ---------------------------------------------- | ---------------------- |
-| `persistence.library.storageClass`         | Storage class for user library                 | `null` (must be set)   |
-| `persistence.library.size`                 | Size of the user library volume                | `10Gi`                 |
-| `persistence.library.existingClaim`        | Use an existing PVC instead of creating one    | `null`                 |
-| `persistence.external.storageClass`        | Storage class for external libraries           | `null` (must be set)   |
-| `persistence.external.size`                | Size of the external volume                    | `10Gi`                 |
-| `persistence.external.existingClaim`       | Use an existing PVC instead of creating one    | `null`                 |
-| `persistence.machine-learning-cache.type`  | Type for ML cache (`persistentVolumeClaim` or `emptyDir`) | `persistentVolumeClaim` |
-| `persistence.machine-learning-cache.storageClass` | Storage class for ML cache          | `null` (must be set)   |
-| `persistence.machine-learning-cache.size`  | Size of the ML cache volume                    | `10Gi`                 |
-
-### Controllers
-
-Override controller settings for server and machine-learning:
+#### Ingress (`ingress`)
 
 ```yaml
-# Enable or disable machine learning
-immich:
-  machineLearning:
-    enabled: true  # Set to false to disable ML features
+ingress:
+  server:
+    enabled: true
+    hosts:
+      - host: immich.yourdomain.com
+        paths:
+          - path: '/'
+    tls:
+      - secretName: immich-tls
+        hosts:
+          - immich.yourdomain.com
+```
 
+#### Resource Limits (`controllers`)
+
+```yaml
 controllers:
   server:
     replicas: 2
@@ -183,26 +171,14 @@ controllers:
             memory: 4Gi
   
   machine-learning:
-    replicas: 1
     containers:
       main:
         resources:
           limits:
-            nvidia.com/gpu: 1  # For GPU acceleration
+            nvidia.com/gpu: 1  # GPU acceleration
 ```
 
-### Ingress
-
-| Parameter                      | Description                    | Default  |
-| ------------------------------ | ------------------------------ | -------- |
-| `ingress.server.enabled`       | Enable ingress for Immich      | `true`   |
-| `ingress.server.hosts`         | Ingress hosts configuration    | `immich.local` |
-| `ingress.server.annotations`   | Ingress annotations            | `proxy-body-size: 0` |
-| `ingress.server.tls`           | Ingress TLS configuration      | `[]`     |
-
-### Database (PostgreSQL)
-
-Default configuration is managed in `templates/postgresql.yaml`. You can override settings in `values.yaml`:
+#### PostgreSQL (`postgresql`)
 
 ```yaml
 postgresql:
@@ -215,14 +191,7 @@ postgresql:
         memory: 4Gi
 ```
 
-Key settings:
-- Default size: `100Gi`
-- Vector extensions pre-installed (cube, earthdistance, vectors)
-- Optimized for Immich workload
-
-### Redis
-
-Default configuration is managed in `templates/redis.yaml`. You can override settings in `values.yaml`:
+#### Redis (`redis`)
 
 ```yaml
 redis:
@@ -232,237 +201,19 @@ redis:
       size: 1Gi
 ```
 
-Key settings:
-- Standalone architecture
-- Persistence disabled by default
-- Auth disabled for simplicity
-
-### Required Changes
-
-- **Database password:**  
-  You must set a secure password for PostgreSQL, ideally using Kubernetes secrets.  
-  Set `postgresql.global.postgresql.auth.password` or use `postgresql.global.postgresql.auth.existingSecret` if possible.
-
-- **Storage classes:**  
-  Set `persistence.library.storageClass`, `persistence.external.storageClass`, `persistence.machine-learning-cache.storageClass`,and `postgresql.primary.persistence.storageClass` to match your cluster’s storage provisioner.
-
-  Alernatively, create the required PVCs yourself and set `existingClaim` for each volume to use them.
-
-### Useful Changes
-
-- **Ingress:**  
-  Set `ingress.server.enabled: true` and configure `ingress.server.hosts` and TLS as needed.
-
-- **Resource requests/limits:**  
-  Adjust `postgresql.primary.resources` and other resource settings to fit your environment.
-
-
----
-
-**Note:**  
-This table is not exhaustive. See `charts/immich/values.yaml` for all options and further documentation links.
-
 ## Advanced Configuration
 
-### Using Common Chart Features
+This chart uses the [bjw-s common library](https://github.com/bjw-s-labs/helm-charts/tree/common-4.3.0/charts/library/common), providing access to advanced Kubernetes features.
 
-This chart uses the [common library](https://github.com/bjw-s-labs/helm-charts/tree/common-4.3.0/charts/library/common), which provides many advanced Kubernetes features.
+For detailed examples of node affinity, tolerations, security contexts, init containers, and more, see the [common library documentation](https://github.com/bjw-s-labs/helm-charts/blob/common-4.3.0/charts/library/common/values.yaml).
 
-You can apply common chart features to specific controllers. Here are some examples:
-
-#### Node Affinity
-
-Pin services to specific nodes:
-
-```yaml
-controllers:
-  server:
-    pod:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: workload-type
-                    operator: In
-                    values:
-                      - web
-  
-  machine-learning:
-    pod:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: gpu
-                    operator: In
-                    values:
-                      - nvidia
-```
-
-#### Tolerations
-
-Allow pods to run on tainted nodes:
-
-```yaml
-controllers:
-  server:
-    pod:
-      tolerations:
-        - key: "dedicated"
-          operator: "Equal"
-          value: "immich"
-          effect: "NoSchedule"
-```
-
-#### Pod Security Context
-
-Set security contexts:
-
-```yaml
-controllers:
-  server:
-    pod:
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
-```
-
-#### Init Containers
-
-Add init containers for setup tasks:
-
-```yaml
-controllers:
-  server:
-    initContainers:
-      init-permissions:
-        image:
-          repository: busybox
-          tag: latest
-        command:
-          - sh
-          - -c
-          - chown -R 1000:1000 /data
-```
-
-#### Service Annotations
-
-Add annotations to services (e.g., for load balancer configuration):
-
-```yaml
-service:
-  server:
-    annotations:
-      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-```
-
-### External Database
-
-To use an external PostgreSQL database:
-
-```yaml
-# Disable bundled PostgreSQL
-postgresql:
-  enabled: false
-
-# Configure external database connection
-immich:
-  database:
-    host: "postgres.example.com"
-    port: 5432
-    username: "immich"
-    name: "immich"
-    password:
-      valueFrom:
-        secretKeyRef:
-          name: immich-db-secret
-          key: password
-```
-
-### External Redis
-
-To use an external Redis instance:
-
-```yaml
-# Disable bundled Redis
-redis:
-  enabled: false
-
-# Configure external Redis connection
-immich:
-  redis:
-    host: "redis.example.com"
-    port: 6379
-```
-
-### Monitoring
-
-Enable Prometheus metrics collection:
-
-```yaml
-immich:
-  monitoring:
-    enabled: true
-```
-
-This automatically:
-- Enables metrics endpoints (ports 8081 and 8082)
-- Creates a ServiceMonitor resource for Prometheus Operator
-- Exposes API and microservices metrics for monitoring
-
-### High Availability
-
-Run multiple replicas with proper anti-affinity:
-
-```yaml
-controllers:
-  server:
-    replicas: 3
-    pod:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: app.kubernetes.io/controller
-                      operator: In
-                      values:
-                        - server
-                topologyKey: kubernetes.io/hostname
-```
-
-## Chart Architecture 
-
-This chart uses the [common library](https://github.com/bjw-s-labs/helm-charts/tree/common-4.3.0/charts/library/common). 
+### Chart Architecture
 
 The chart defines two main controllers:
-- **server**: The main Immich API and web interface
-- **machine-learning**: The machine learning service for face detection, object recognition, etc.
+- **server**: Main Immich API and web interface
+- **machine-learning**: ML service (face detection, object recognition, etc.) - automatically disabled when `immich.machineLearning.enabled: false`
 
-### Configuration Design
-
-The chart uses semantic configuration objects rather than exposing raw environment variables:
-
-- **`immich.database`**: Database connection settings (host, port, username, name, password)
-- **`immich.redis`**: Redis connection settings (host, port)
-- **`immich.machineLearning.enabled`**: Enable/disable the ML service
-
-These high-level configurations are automatically transformed into the appropriate environment variables for all Immich components. This approach provides:
-
-1. **Clear intent**: Configuration objects are self-documenting
-2. **Type safety**: Proper structure for complex values (like secrets)
-3. **Smart defaults**: Automatically uses bundled services when not specified
-4. **Consistency**: Same configuration applied to all components
-5. **Extensibility**: Configuration sections can be enriched with additional settings as needed
-
-The machine learning service URL is automatically configured and cannot be overridden as it always uses the internal service.
-
-For more advanced configurations, please reference [the common library's values.yaml](https://github.com/bjw-s-labs/helm-charts/blob/common-4.3.0/charts/library/common/values.yaml) to see all available options.
+Configuration uses semantic objects (`immich.database`, `immich.redis`, etc.) that are automatically transformed into appropriate environment variables for all components.
 
 ## Uninstalling the Chart
 

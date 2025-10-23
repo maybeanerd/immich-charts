@@ -113,7 +113,7 @@ persistence:
         main:
           - path: /usr/src/app/external
   machine-learning-cache:
-    enabled: true # Automatically disabled if enableMachineLearning is false
+    enabled: true # Automatically disabled when immich.machineLearning.enabled is false
     type: persistentVolumeClaim
     # Optional: Set type to emptyDir to stop caching between pod restarts
     # type: emptyDir
