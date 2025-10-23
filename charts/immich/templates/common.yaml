@@ -1,12 +1,217 @@
 ---
 {{- include "bjw-s.common.loader.init" . }}
 
+{{/*
+Common environment variables shared across all Immich components
+*/}}
+{{- define "immich.common.env" -}}
+{{- $redisHostname := printf "%s-redis-master" .Release.Name -}}
+{{- $dbHostname := printf "%s-postgresql" .Release.Name -}}
+{{- $mlUrl := printf "http://%s-machine-learning:3003" .Release.Name -}}
+{{- if .Values.immich.env.REDIS_HOSTNAME -}}
+  {{- $redisHostname = .Values.immich.env.REDIS_HOSTNAME -}}
+{{- end -}}
+{{- if .Values.immich.env.DB_HOSTNAME -}}
+  {{- $dbHostname = .Values.immich.env.DB_HOSTNAME -}}
+{{- end -}}
+{{- if .Values.immich.env.IMMICH_MACHINE_LEARNING_URL -}}
+  {{- $mlUrl = .Values.immich.env.IMMICH_MACHINE_LEARNING_URL -}}
+{{- end -}}
+REDIS_HOSTNAME: {{ $redisHostname | quote }}
+DB_HOSTNAME: {{ $dbHostname | quote }}
+DB_USERNAME: {{ .Values.immich.env.DB_USERNAME | default .Values.postgresql.global.postgresql.auth.username | quote }}
+DB_DATABASE_NAME: {{ .Values.immich.env.DB_DATABASE_NAME | default .Values.postgresql.global.postgresql.auth.database | quote }}
+{{- if .Values.immich.env.DB_PASSWORD }}
+{{- if kindIs "map" .Values.immich.env.DB_PASSWORD }}
+DB_PASSWORD:
+  {{- .Values.immich.env.DB_PASSWORD | toYaml | nindent 2 }}
+{{- else }}
+DB_PASSWORD: {{ .Values.immich.env.DB_PASSWORD | quote }}
+{{- end }}
+{{- else }}
+DB_PASSWORD: {{ .Values.postgresql.global.postgresql.auth.password | quote }}
+{{- end }}
+IMMICH_MACHINE_LEARNING_URL: {{ $mlUrl | quote }}
+{{- end -}}
+
 {{- define "immich.hardcodedValues" -}}
 # Set the nameOverride based on the release name if no override has been set
 {{ if not .Values.global.nameOverride }}
 global:
   nameOverride: "{{ .Release.Name }}"
 {{ end }}
+
+# Common configurations
+podAnnotations:
+  checksum/config: '{{ .Values.immich.configuration | toYaml | sha256sum }}'
+
+persistence:
+  immich-config:
+    type: configMap
+    name: "{{ .Release.Name }}-immich-config"
+    globalMounts:
+      - path: /config
+        readOnly: false
+
+controllers:
+  server:
+    enabled: true
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      main:
+        enabled: true
+        ports:
+          - name: http
+            containerPort: 2283
+          - name: metrics-api
+            containerPort: 8081
+          - name: metrics-ms
+            containerPort: 8082
+        image:
+          repository: ghcr.io/immich-app/immich-server
+          tag: {{ .Values.image.tag | quote }}
+          pullPolicy: IfNotPresent
+        env:
+          {{- include "immich.common.env" . | nindent 10 }}
+          IMMICH_TELEMETRY_INCLUDE: 'all'
+          IMMICH_CONFIG_FILE: /config/immich-config.yaml
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/server/ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/server/ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/server/ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 30
+
+  machine-learning:
+    enabled: true
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      main:
+        enabled: true
+        ports:
+          - name: http
+            containerPort: 3003
+        image:
+          repository: ghcr.io/immich-app/immich-machine-learning
+          tag: {{ .Values.image.tag | quote }}
+          pullPolicy: IfNotPresent
+        env:
+          {{- include "immich.common.env" . | nindent 10 }}
+          TRANSFORMERS_CACHE: /cache
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 60
+
+service:
+  server:
+    enabled: true
+    primary: true
+    type: ClusterIP
+    controller: server
+    ports:
+      http:
+        enabled: true
+        primary: true
+        port: 2283
+        protocol: HTTP
+      metrics-api:
+        enabled: false
+        port: 8081
+        protocol: HTTP
+      metrics-ms:
+        enabled: false
+        port: 8082
+        protocol: HTTP
+  machine-learning:
+    enabled: true
+    type: ClusterIP
+    controller: machine-learning
+    ports:
+      http:
+        enabled: true
+        primary: true
+        port: 3003
+        protocol: HTTP
+
+serviceMonitor:
+  server:
+    serviceName: server
+    endpoints:
+      - port: metrics-api
+        scheme: http
+      - port: metrics-ms
+        scheme: http
+
+ingress:
+  server:
+    enabled: {{ .Values.ingress.server.enabled }}
+    annotations:
+      {{- .Values.ingress.server.annotations | toYaml | nindent 6 }}
+    hosts:
+      {{- .Values.ingress.server.hosts | toYaml | nindent 6 }}
+    tls:
+      {{- .Values.ingress.server.tls | toYaml | nindent 6 }}
 {{- end -}}
 {{- $_ := mergeOverwrite .Values (include "immich.hardcodedValues" . | fromYaml) -}}
 
