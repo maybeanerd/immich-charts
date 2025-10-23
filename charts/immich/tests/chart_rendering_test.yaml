@@ -1,0 +1,55 @@
+suite: test chart rendering with dependencies
+templates:
+  - templates/postgresql.yaml
+  - templates/redis.yaml
+  - templates/common.yaml
+
+tests:
+  - it: should create server deployment
+    documentIndex: 3
+    asserts:
+      - isKind:
+          of: Deployment
+      - matchRegex:
+          path: metadata.name
+          pattern: 'release-name-(server|machine-learning)'
+
+  - it: should create machine learning deployment
+    documentIndex: 4
+    asserts:
+      - isKind:
+          of: Deployment
+      - matchRegex:
+          path: metadata.name
+          pattern: 'release-name-(server|machine-learning)'
+
+  - it: should create server service
+    documentIndex: 5
+    asserts:
+      - isKind:
+          of: Service
+      - matchRegex:
+          path: metadata.name
+          pattern: 'release-name-(server|machine-learning)'
+
+  - it: should create library PVC
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - matchRegex:
+          path: metadata.name
+          pattern: 'release-name-(library|external|machine-learning-cache)'
+
+  - it: should NOT create ML cache PVC when ML is disabled
+    set:
+      immich.machineLearning.enabled: false
+    asserts:
+      - notMatchRegex:
+          path: metadata.name
+          pattern: 'machine-learning-cache'
+        documentIndex: 0
+      - notMatchRegex:
+          path: metadata.name
+          pattern: 'machine-learning-cache'
+        documentIndex: 1

@@ -1,6 +1,4 @@
 suite: test immich configuration management
-chart:
-  appVersion: '1.0.0'
 templates:
   - templates/immich-config.yml
 
