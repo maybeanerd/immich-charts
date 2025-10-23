@@ -10,19 +10,7 @@ Common environment variables shared across all Immich components
 {{- $dbPort := .Values.immich.database.port | default 5432 -}}
 {{- $dbUsername := .Values.immich.database.username | default "immich" -}}
 {{- $dbName := .Values.immich.database.name | default "immich" -}}
-{{- $dbPassword := .Values.immich.database.password -}}
-{{- if not .Values.immich.database.host -}}
-  {{- /* Use bundled PostgreSQL password if no external host is specified */ -}}
-  {{- if .Values.postgresql -}}
-    {{- if .Values.postgresql.global -}}
-      {{- if .Values.postgresql.global.postgresql -}}
-        {{- $dbUsername = .Values.postgresql.global.postgresql.auth.username | default $dbUsername -}}
-        {{- $dbName = .Values.postgresql.global.postgresql.auth.database | default $dbName -}}
-        {{- $dbPassword = .Values.postgresql.global.postgresql.auth.password | default $dbPassword -}}
-      {{- end -}}
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
+{{- $dbPassword := .Values.immich.database.password | default "" -}}
 
 {{- /* Redis configuration */ -}}
 {{- $redisHost := .Values.immich.redis.host | default (printf "%s-redis-master" .Release.Name) -}}
@@ -41,8 +29,10 @@ DB_DATABASE_NAME: {{ $dbName | quote }}
 {{- if kindIs "map" $dbPassword }}
 DB_PASSWORD:
   {{- $dbPassword | toYaml | nindent 2 }}
-{{- else }}
+{{- else if $dbPassword }}
 DB_PASSWORD: {{ $dbPassword | quote }}
+{{- else }}
+DB_PASSWORD: ""
 {{- end }}
 REDIS_HOSTNAME: {{ $redisHostname | quote }}
 IMMICH_MACHINE_LEARNING_URL: {{ $mlUrl | quote }}

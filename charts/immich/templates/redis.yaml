@@ -1,11 +1,12 @@
 {{- define "immich.redis.defaults" -}}
 redis:
   enabled: true
-  architecture: standalone
+  auth:
+    enabled: false
   master:
     persistence:
       enabled: false
-  auth:
-    enabled: false
+  replica:
+    replicaCount: 0
 {{- end -}}
 
