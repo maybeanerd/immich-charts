@@ -22,31 +22,35 @@ immich:
     #   enabled: true
     #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
 
-  # Environment variables shared across all Immich components
-  # These can be overridden or extended per-controller in the controllers section
-  env:
+  # Database configuration
+  # If not specified, defaults to the included postgresql instance
+  database:
     {}
-    # Database connection settings
-    # If not specified, defaults to the included postgresql instance
-    # DB_HOSTNAME: ""
-    # DB_USERNAME: ""
-    # DB_DATABASE_NAME: ""
-    # DB_PASSWORD: ""
+    # host: "postgres.example.com"
+    # port: 5432
+    # username: "immich"
+    # name: "immich"
+    # password: "password"
     #
     # To use a secret for the password:
-    # DB_PASSWORD:
+    # password:
     #   valueFrom:
     #     secretKeyRef:
-    #       name: immich-secret
-    #       key: db-password
-    #
-    # Redis connection settings
-    # If not specified, defaults to the included redis instance
-    # REDIS_HOSTNAME: ""
-    #
-    # Machine Learning URL
-    # If not specified, defaults to the machine-learning service
-    # IMMICH_MACHINE_LEARNING_URL: ""
+    #       name: immich-db-secret
+    #       key: password
+
+  # Redis configuration
+  # If not specified, defaults to the included redis instance
+  redis:
+    {}
+    # host: "redis.example.com"
+    # port: 6379
+
+  # Machine Learning configuration
+  machineLearning:
+    # Enable or disable the ML service
+    # Set to false to disable ML features (face detection, object recognition, etc.)
+    enabled: true
 
 # Controllers section is now managed by templates
 # You can still override specific values here
@@ -102,6 +106,7 @@ persistence:
         main:
           - path: /usr/src/app/external
   machine-learning-cache:
+    enabled: true # Automatically disabled if enableMachineLearning is false
     type: persistentVolumeClaim
     # Optional: Set type to emptyDir to stop caching between pod restarts
     # type: emptyDir

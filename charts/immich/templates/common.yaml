@@ -5,32 +5,34 @@
 Common environment variables shared across all Immich components
 */}}
 {{- define "immich.common.env" -}}
-{{- $redisHostname := printf "%s-redis-master" .Release.Name -}}
-{{- $dbHostname := printf "%s-postgresql" .Release.Name -}}
+{{- /* Database configuration */ -}}
+{{- $dbHost := .Values.immich.database.host | default (printf "%s-postgresql" .Release.Name) -}}
+{{- $dbPort := .Values.immich.database.port | default 5432 -}}
+{{- $dbUsername := .Values.immich.database.username | default .Values.postgresql.global.postgresql.auth.username -}}
+{{- $dbName := .Values.immich.database.name | default .Values.postgresql.global.postgresql.auth.database -}}
+{{- $dbPassword := .Values.immich.database.password | default .Values.postgresql.global.postgresql.auth.password -}}
+
+{{- /* Redis configuration */ -}}
+{{- $redisHost := .Values.immich.redis.host | default (printf "%s-redis-master" .Release.Name) -}}
+{{- $redisPort := .Values.immich.redis.port | default 6379 -}}
+{{- $redisHostname := printf "%s:%v" $redisHost $redisPort -}}
+{{- if not .Values.immich.redis.port -}}
+  {{- $redisHostname = $redisHost -}}
+{{- end -}}
+
+{{- /* Machine Learning configuration - always uses internal service */ -}}
 {{- $mlUrl := printf "http://%s-machine-learning:3003" .Release.Name -}}
-{{- if .Values.immich.env.REDIS_HOSTNAME -}}
-  {{- $redisHostname = .Values.immich.env.REDIS_HOSTNAME -}}
-{{- end -}}
-{{- if .Values.immich.env.DB_HOSTNAME -}}
-  {{- $dbHostname = .Values.immich.env.DB_HOSTNAME -}}
-{{- end -}}
-{{- if .Values.immich.env.IMMICH_MACHINE_LEARNING_URL -}}
-  {{- $mlUrl = .Values.immich.env.IMMICH_MACHINE_LEARNING_URL -}}
-{{- end -}}
-REDIS_HOSTNAME: {{ $redisHostname | quote }}
-DB_HOSTNAME: {{ $dbHostname | quote }}
-DB_USERNAME: {{ .Values.immich.env.DB_USERNAME | default .Values.postgresql.global.postgresql.auth.username | quote }}
-DB_DATABASE_NAME: {{ .Values.immich.env.DB_DATABASE_NAME | default .Values.postgresql.global.postgresql.auth.database | quote }}
-{{- if .Values.immich.env.DB_PASSWORD }}
-{{- if kindIs "map" .Values.immich.env.DB_PASSWORD }}
+
+DB_HOSTNAME: {{ $dbHost | quote }}
+DB_USERNAME: {{ $dbUsername | quote }}
+DB_DATABASE_NAME: {{ $dbName | quote }}
+{{- if kindIs "map" $dbPassword }}
 DB_PASSWORD:
-  {{- .Values.immich.env.DB_PASSWORD | toYaml | nindent 2 }}
+  {{- $dbPassword | toYaml | nindent 2 }}
 {{- else }}
-DB_PASSWORD: {{ .Values.immich.env.DB_PASSWORD | quote }}
+DB_PASSWORD: {{ $dbPassword | quote }}
 {{- end }}
-{{- else }}
-DB_PASSWORD: {{ .Values.postgresql.global.postgresql.auth.password | quote }}
-{{- end }}
+REDIS_HOSTNAME: {{ $redisHostname | quote }}
 IMMICH_MACHINE_LEARNING_URL: {{ $mlUrl | quote }}
 {{- end -}}
 
@@ -52,6 +54,11 @@ persistence:
     globalMounts:
       - path: /config
         readOnly: false
+  # Disable machine-learning-cache if machine learning is disabled
+  {{- if not .Values.immich.machineLearning.enabled }}
+  machine-learning-cache:
+    enabled: false
+  {{- end }}
 
 controllers:
   server:
@@ -112,7 +119,7 @@ controllers:
               failureThreshold: 30
 
   machine-learning:
-    enabled: true
+    enabled: {{ .Values.immich.machineLearning.enabled }}
     strategy: RollingUpdate
     replicas: 1
     containers:
@@ -184,7 +191,7 @@ service:
         port: 8082
         protocol: HTTP
   machine-learning:
-    enabled: true
+    enabled: {{ .Values.immich.machineLearning.enabled }}
     type: ClusterIP
     controller: machine-learning
     ports:
