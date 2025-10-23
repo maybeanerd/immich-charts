@@ -71,11 +71,14 @@ jobs:
         with:
           base: main/charts/immich/build
           head: charts/immich/build
-          comment-header: '## Example: ${{ matrix.example }}'
+          comment-header: '## 📋 Example: `${{ matrix.example }}.yaml`'
+          comment-header-path-prefix: manifest-${{ matrix.example }}.yaml
           comment-footer: |
             <details>
             <summary>📖 About this example</summary>
 
             This diff shows changes to the `${{ matrix.example }}` example configuration.
-            View the example file: [`charts/immich/examples/${{ matrix.example }}.yaml`](../blob/${{ github.event.pull_request.head.sha }}/charts/immich/examples/${{ matrix.example }}.yaml)
+
+            - **Example file**: [`charts/immich/examples/${{ matrix.example }}.yaml`](../blob/${{ github.event.pull_request.head.sha }}/charts/immich/examples/${{ matrix.example }}.yaml)
+            - **Test job**: [View logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             </details>
