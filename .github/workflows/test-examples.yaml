@@ -88,14 +88,14 @@ jobs:
           header: example-${{ matrix.example }}
           message: |
             ## 📋 Example: `${{ matrix.example }}.yaml`
-            
+
             ${{ steps.diff.outputs.has_changes == 'true' && format('```diff\n{0}\n```', steps.diff.outputs.diff) || '_No changes detected_' }}
-            
+
             <details>
             <summary>📖 About this example</summary>
 
             This diff shows changes to the `${{ matrix.example }}` example configuration.
-            
+
             - **Example file**: [`charts/immich/examples/${{ matrix.example }}.yaml`](../blob/${{ github.event.pull_request.head.sha }}/charts/immich/examples/${{ matrix.example }}.yaml)
             - **Test job**: [View logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             </details>
