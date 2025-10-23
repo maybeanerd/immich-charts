@@ -16,7 +16,7 @@ postgresql:
   primary:
     extraEnvVars:
       - name: DB_STORAGE_TYPE
-        value: 'HDD'
+        value: {{ upper .Values.immich.database.storageType | quote }}
       - name: POSTGRES_DB
         value: immich
       - name: POSTGRESQL_STARTUP_TIMEOUT

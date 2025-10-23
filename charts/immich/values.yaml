@@ -36,9 +36,13 @@ immich:
     enabled: false
 
   # Database configuration
-  # If not specified, defaults to the included postgresql instance
   database:
-    {}
+    # Storage optimization for bundled PostgreSQL
+    # Set to 'hdd' for hard disk drives (default) or 'ssd' for solid state drives
+    # Only applies when using the bundled PostgreSQL (postgresql.enabled: true)
+    storageType: hdd
+
+    # External database connection (requires postgresql.enabled: false)
     # host: "postgres.example.com"
     # port: 5432
     # username: "immich"
@@ -53,11 +57,10 @@ immich:
     #       key: password
 
   # Redis configuration
-  # If not specified, defaults to the included redis instance
-  redis:
-    {}
-    # host: "redis.example.com"
-    # port: 6379
+  # For external Redis, set redis.enabled: false and configure connection below
+  redis: {}
+  #   host: "redis.example.com"
+  #   port: 6379
 
   # Machine Learning configuration
   machineLearning:
@@ -112,3 +115,16 @@ ingress:
         paths:
           - path: '/'
     tls: []
+
+# Dependencies - PostgreSQL and Redis
+# Set enabled: false to use external services
+# When disabled, configure connection details in immich.database / immich.redis above
+postgresql:
+  enabled: true
+  # Override any default settings here
+  # See charts/immich/templates/postgresql.yaml for defaults
+
+redis:
+  enabled: true
+  # Override any default settings here
+  # See charts/immich/templates/redis.yaml for defaults
