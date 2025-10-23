@@ -4,6 +4,8 @@
 ## You can find it at https://github.com/bjw-s-labs/helm-charts/tree/main/charts/library/common
 ## Refer there for more detail about the supported values
 
+# Internal image configuration - managed by the chart
+# Users should not override this unless they know what they're doing
 image:
   repository: ghcr.io/immich-app/immich-server
   tag: v2.2.1
@@ -122,7 +124,7 @@ persistence:
 # Ingress configuration
 ingress:
   server:
-    enabled: false
+    enabled: true
     annotations:
       nginx.ingress.kubernetes.io/proxy-body-size: '0'
     hosts:

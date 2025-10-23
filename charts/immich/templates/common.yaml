@@ -216,7 +216,12 @@ ingress:
     annotations:
       {{- .Values.ingress.server.annotations | toYaml | nindent 6 }}
     hosts:
-      {{- .Values.ingress.server.hosts | toYaml | nindent 6 }}
+      - host: {{ (index .Values.ingress.server.hosts 0).host }}
+        paths:
+          - path: {{ (index (index .Values.ingress.server.hosts 0).paths 0).path }}
+            service:
+              identifier: server
+              port: http
     tls:
       {{- .Values.ingress.server.tls | toYaml | nindent 6 }}
 {{- end -}}

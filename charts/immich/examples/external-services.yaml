@@ -1,0 +1,37 @@
+# Example: Using both external PostgreSQL and Redis
+# Useful for production deployments with managed services
+
+# Disable bundled services
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false
+
+# Configure external services
+immich:
+  database:
+    host: 'postgres.prod.example.com'
+    port: 5432
+    username: 'immich_prod'
+    name: 'immich_production'
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: immich-db-secret
+          key: password
+
+  redis:
+    host: 'redis.prod.example.com'
+    port: 6379
+
+persistence:
+  library:
+    storageClass: fast-ssd
+    size: 500Gi
+  external:
+    storageClass: fast-ssd
+    size: 200Gi
+  machine-learning-cache:
+    storageClass: fast-ssd
+    size: 20Gi
