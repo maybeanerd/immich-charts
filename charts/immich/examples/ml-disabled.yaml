@@ -9,15 +9,11 @@ immich:
 
 persistence:
   library:
-    storageClass: standard
+    storageClass: null # Change to your storage class unless you want to use you default provider
     size: 100Gi
   external:
-    storageClass: standard
+    storageClass: null # Change to your storage class unless you want to use you default provider
     size: 50Gi
-  # ML cache is automatically disabled when ML is disabled
-  machine-learning-cache:
-    storageClass: standard
-    size: 10Gi
 
 postgresql:
   global:
@@ -26,5 +22,5 @@ postgresql:
         password: CHANGE-ME-TO-A-SECURE-PASSWORD
   primary:
     persistence:
-      storageClass: standard
+      storageClass: null # Change to your storage class unless you want to use you default provider
       size: 50Gi

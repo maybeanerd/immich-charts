@@ -4,13 +4,13 @@
 # Required: Set storage classes for your cluster
 persistence:
   library:
-    storageClass: standard # Change to your storage class
+    storageClass: null # Change to your storage class unless you want to use you default provider
     size: 100Gi
   external:
-    storageClass: standard # Change to your storage class
+    storageClass: null # Change to your storage class unless you want to use you default provider
     size: 50Gi
   machine-learning-cache:
-    storageClass: standard # Change to your storage class
+    storageClass: null # Change to your storage class unless you want to use you default provider
     size: 10Gi
 
 # Required: Set a secure database password
@@ -21,5 +21,5 @@ postgresql:
         password: CHANGE-ME-TO-A-SECURE-PASSWORD
   primary:
     persistence:
-      storageClass: standard # Change to your storage class
+      storageClass: null # Change to your storage class unless you want to use you default provider
       size: 50Gi

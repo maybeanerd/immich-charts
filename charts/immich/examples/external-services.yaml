@@ -27,11 +27,11 @@ immich:
 
 persistence:
   library:
-    storageClass: fast-ssd
+    storageClass: null # Change to your storage class unless you want to use you default provider
     size: 500Gi
   external:
-    storageClass: fast-ssd
+    storageClass: null # Change to your storage class unless you want to use you default provider
     size: 200Gi
   machine-learning-cache:
-    storageClass: fast-ssd
+    storageClass: null # Change to your storage class unless you want to use you default provider
     size: 20Gi
