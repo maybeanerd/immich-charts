@@ -1,0 +1,11 @@
+{{- define "immich.redis.defaults" -}}
+redis:
+  enabled: true
+  architecture: standalone
+  master:
+    persistence:
+      enabled: false
+  auth:
+    enabled: false
+{{- end -}}
+

@@ -1,7 +1,7 @@
 # Example: Using both external PostgreSQL and Redis
 # Useful for production deployments with managed services
 
-# Disable bundled services
+# Disable bundled services when using external ones
 postgresql:
   enabled: false
 
