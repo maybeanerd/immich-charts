@@ -195,11 +195,11 @@ service:
         port: 2283
         protocol: HTTP
       metrics-api:
-        enabled: {{ .Values.prometheus.enabled }}
+        enabled: {{ .Values.immich.monitoring.enabled }}
         port: 8081
         protocol: HTTP
       metrics-ms:
-        enabled: {{ .Values.prometheus.enabled }}
+        enabled: {{ .Values.immich.monitoring.enabled }}
         port: 8082
         protocol: HTTP
   machine-learning:
@@ -213,7 +213,7 @@ service:
         port: 3003
         protocol: HTTP
 
-{{- if .Values.prometheus.enabled }}
+{{- if .Values.immich.monitoring.enabled }}
 serviceMonitor:
   server:
     enabled: true

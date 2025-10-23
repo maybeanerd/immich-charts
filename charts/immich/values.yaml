@@ -10,11 +10,6 @@ image:
   repository: ghcr.io/immich-app/immich-server
   tag: v2.2.1
 
-# Enable Prometheus metrics and ServiceMonitor
-# Set to true to expose metrics endpoints and create ServiceMonitor resource
-prometheus:
-  enabled: false
-
 immich:
   # configuration is immich-config.json converted to yaml
   # ref: https://immich.app/docs/install/config-file/
@@ -28,6 +23,11 @@ immich:
     # storageTemplate:
     #   enabled: true
     #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+
+  # Monitoring configuration
+  # Enable to expose Prometheus metrics endpoints and create ServiceMonitor
+  monitoring:
+    enabled: false
 
   # Database configuration
   # If not specified, defaults to the included postgresql instance
