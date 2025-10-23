@@ -71,6 +71,7 @@ jobs:
         with:
           base: main/charts/immich/build
           head: charts/immich/build
+          update-if-exists-key: ${{ github.workflow }}/${{ github.job }}/example-${{ matrix.example }}
           comment-header: '## 📋 Example: `${{ matrix.example }}.yaml`'
           comment-footer: |
             <details>
