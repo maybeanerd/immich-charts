@@ -75,21 +75,22 @@ helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
 
 | Parameter                       | Description                                                                      | Default  |
 | ------------------------------- | -------------------------------------------------------------------------------- | -------- |
-| `prometheus.enabled`            | Enable Prometheus metrics endpoints and ServiceMonitor                           | `false`  |
 | `immich.configuration`          | Immich app configuration (see [docs](https://immich.app/docs/install/config-file/)) | `{}` |
+| `immich.monitoring.enabled`     | Enable Prometheus metrics endpoints and ServiceMonitor                           | `false`  |
 | `immich.database`               | Database connection configuration (see below)                                    | `{}` |
 | `immich.redis`                  | Redis connection configuration (see below)                                       | `{}` |
 | `immich.machineLearning.enabled`| Enable or disable ML features (face detection, object recognition, etc.)         | `true`   |
 
 > **Note**: The image version is managed by the chart and should not be overridden by users.
 
-#### Prometheus Monitoring
+#### Monitoring Configuration (`immich.monitoring`)
 
 Enable Prometheus metrics collection:
 
 ```yaml
-prometheus:
-  enabled: true  # Enables metrics endpoints and creates ServiceMonitor
+immich:
+  monitoring:
+    enabled: true  # Enables metrics endpoints and creates ServiceMonitor
 ```
 
 When enabled, this will:
@@ -402,8 +403,9 @@ immich:
 Enable Prometheus metrics collection:
 
 ```yaml
-prometheus:
-  enabled: true
+immich:
+  monitoring:
+    enabled: true
 ```
 
 This automatically:
