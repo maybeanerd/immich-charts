@@ -31,6 +31,8 @@ You should not copy the full values.yaml from this repository. Only set the valu
 
 # Configuration
 
+TODO: rework this, and streamline it
+
 This Helm chart for Immich is highly configurable. The chart uses a clean values structure where defaults are provided in templates, and users only need to override what they want to change.
 
 ## Quick Start
