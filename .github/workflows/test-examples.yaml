@@ -71,8 +71,7 @@ jobs:
         with:
           base: main/charts/immich/build
           head: charts/immich/build
-          comment-header: '## 📋 Example: `${{ matrix.example }}.yaml`'
-          comment-header-path-prefix: manifest-${{ matrix.example }}.yaml
+          comment-header: '## 📋 Example: `${{ matrix.example }}.yaml` <!-- example-${{ matrix.example }} -->'
           comment-footer: |
             <details>
             <summary>📖 About this example</summary>
