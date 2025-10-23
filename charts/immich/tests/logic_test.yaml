@@ -1,0 +1,83 @@
+suite: test chart conditional logic
+chart:
+  appVersion: '1.0.0'
+templates:
+  - templates/common.yaml
+  - templates/postgresql.yaml
+  - templates/redis.yaml
+
+tests:
+  # Machine Learning Tests
+  - it: should enable ML deployment by default
+    asserts:
+      - isNotNull:
+          path: controllers.machine-learning
+        template: templates/common.yaml
+
+  - it: should disable ML deployment when configured
+    set:
+      immich.machineLearning.enabled: false
+    asserts:
+      - equal:
+          path: controllers.machine-learning.enabled
+          value: false
+        template: templates/common.yaml
+
+  # Monitoring Tests
+  - it: should not include telemetry env when monitoring disabled
+    set:
+      immich.monitoring.enabled: false
+    asserts:
+      - isNull:
+          path: controllers.server.containers.main.env.IMMICH_TELEMETRY_INCLUDE
+        template: templates/common.yaml
+
+  # Database Tests
+  - it: should set HDD storage type by default
+    asserts:
+      - equal:
+          path: postgresql.primary.extraEnvVars[0].value
+          value: HDD
+        template: templates/postgresql.yaml
+
+  - it: should set SSD storage type when configured
+    set:
+      immich.database.storageType: ssd
+    asserts:
+      - equal:
+          path: postgresql.primary.extraEnvVars[0].value
+          value: SSD
+        template: templates/postgresql.yaml
+
+  # Service Enable/Disable Tests
+  - it: should enable PostgreSQL by default
+    asserts:
+      - equal:
+          path: postgresql.enabled
+          value: true
+        template: templates/postgresql.yaml
+
+  - it: should disable PostgreSQL when configured
+    set:
+      postgresql.enabled: false
+    asserts:
+      - equal:
+          path: postgresql.enabled
+          value: false
+        template: templates/postgresql.yaml
+
+  - it: should enable Redis by default
+    asserts:
+      - equal:
+          path: redis.enabled
+          value: true
+        template: templates/redis.yaml
+
+  - it: should disable Redis when configured
+    set:
+      redis.enabled: false
+    asserts:
+      - equal:
+          path: redis.enabled
+          value: false
+        template: templates/redis.yaml

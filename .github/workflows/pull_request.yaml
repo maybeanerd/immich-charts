@@ -22,8 +22,27 @@ jobs:
       - name: install chart dependencies
         run: helm dependency build charts/immich
 
+      - name: install helm-unittest plugin
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest
+
+      - name: run unit tests
+        run: helm unittest charts/immich
+
       - name: lint helm chart
         run: helm lint charts/immich --set persistence.library.storageClass=test-pvc-provisioner --set persistence.external.storageClass=test-pvc-provisioner --set persistence.machine-learning-cache.storageClass=test-pvc-provisioner --set postgresql.primary.persistence.storageClass=test-pvc-provisioner --set postgresql.global.postgresql.auth.password=test-password
+
+      - name: test examples render successfully
+        run: |
+          echo "Testing minimal.yaml..."
+          helm template test charts/immich -f charts/immich/examples/minimal.yaml > /dev/null
+
+          echo "Testing external-services.yaml..."
+          helm template test charts/immich -f charts/immich/examples/external-services.yaml > /dev/null
+
+          echo "Testing ml-disabled.yaml..."
+          helm template test charts/immich -f charts/immich/examples/ml-disabled.yaml > /dev/null
+
+          echo "All examples render successfully!"
 
       - name: prepare
         run: mkdir -p charts/immich/build
@@ -50,4 +69,4 @@ jobs:
         with:
           base: main/charts/immich/build
           head: charts/immich/build
-          comment-header: "## Changes in Final Manifest"
+          comment-header: '## Changes in Final Manifest'

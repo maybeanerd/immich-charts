@@ -1,0 +1,60 @@
+suite: test service configuration
+chart:
+  appVersion: '1.0.0'
+templates:
+  - templates/common.yaml
+  - templates/postgresql.yaml
+  - templates/redis.yaml
+
+tests:
+  - it: should enable bundled PostgreSQL by default
+    asserts:
+      - equal:
+          path: postgresql.enabled
+          value: true
+        template: templates/postgresql.yaml
+
+  - it: should enable bundled Redis by default
+    asserts:
+      - equal:
+          path: redis.enabled
+          value: true
+        template: templates/redis.yaml
+
+  - it: should disable PostgreSQL when configured
+    set:
+      postgresql.enabled: false
+    asserts:
+      - equal:
+          path: postgresql.enabled
+          value: false
+        template: templates/postgresql.yaml
+
+  - it: should disable Redis when configured
+    set:
+      redis.enabled: false
+    asserts:
+      - equal:
+          path: redis.enabled
+          value: false
+        template: templates/redis.yaml
+
+  - it: should create server service
+    asserts:
+      - hasDocuments:
+          count: 1
+        documentSelector:
+          path: metadata.name
+          value: RELEASE-NAME-server
+
+  - it: should expose port 2283 on server service
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: http
+            port: 2283
+            protocol: HTTP
+        documentSelector:
+          path: metadata.name
+          value: RELEASE-NAME-server

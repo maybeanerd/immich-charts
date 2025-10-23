@@ -1,0 +1,63 @@
+suite: test machine learning configuration
+chart:
+  appVersion: '1.0.0'
+templates:
+  - templates/common.yaml
+  - templates/postgresql.yaml
+  - templates/redis.yaml
+
+tests:
+  - it: should create ML deployment when enabled (default)
+    set:
+      immich.machineLearning.enabled: true
+    asserts:
+      # Should have ML deployment
+      - hasDocuments:
+          count: 1
+        documentSelector:
+          path: metadata.labels.[app.kubernetes.io/controller]
+          value: machine-learning
+
+  - it: should NOT create ML deployment when disabled
+    set:
+      immich.machineLearning.enabled: false
+    asserts:
+      # Should NOT have ML deployment
+      - hasDocuments:
+          count: 0
+        documentSelector:
+          path: metadata.labels.[app.kubernetes.io/controller]
+          value: machine-learning
+
+  - it: should create ML service when enabled
+    set:
+      immich.machineLearning.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+        documentSelector:
+          path: metadata.name
+          value: RELEASE-NAME-machine-learning
+
+  - it: should NOT create ML service when disabled
+    set:
+      immich.machineLearning.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+        documentSelector:
+          path: metadata.name
+          value: RELEASE-NAME-machine-learning
+
+  - it: should set ML URL env var for server
+    set:
+      immich.machineLearning.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: IMMICH_MACHINE_LEARNING_URL
+            value: 'http://RELEASE-NAME-machine-learning:3003'
+        documentSelector:
+          path: metadata.labels.[app.kubernetes.io/controller]
+          value: server

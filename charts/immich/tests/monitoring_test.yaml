@@ -1,0 +1,82 @@
+suite: test monitoring configuration
+chart:
+  appVersion: '1.0.0'
+templates:
+  - templates/common.yaml
+  - templates/postgresql.yaml
+  - templates/redis.yaml
+
+tests:
+  - it: should NOT set telemetry env var when monitoring disabled (default)
+    set:
+      immich.monitoring.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: IMMICH_TELEMETRY_INCLUDE
+        documentSelector:
+          path: metadata.labels.[app.kubernetes.io/controller]
+          value: server
+
+  - it: should set telemetry env var when monitoring enabled
+    set:
+      immich.monitoring.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: IMMICH_TELEMETRY_INCLUDE
+            value: all
+        documentSelector:
+          path: metadata.labels.[app.kubernetes.io/controller]
+          value: server
+
+  - it: should expose metrics ports when monitoring enabled
+    set:
+      immich.monitoring.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: metrics-api
+            containerPort: 8081
+            protocol: TCP
+        documentSelector:
+          path: metadata.labels.[app.kubernetes.io/controller]
+          value: server
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: metrics-ms
+            containerPort: 8082
+            protocol: TCP
+        documentSelector:
+          path: metadata.labels.[app.kubernetes.io/controller]
+          value: server
+
+  - it: should enable metrics service ports when monitoring enabled
+    set:
+      immich.monitoring.enabled: true
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: metrics-api
+            port: 8081
+            protocol: TCP
+        documentSelector:
+          path: metadata.name
+          value: RELEASE-NAME-server
+
+  - it: should NOT expose metrics ports when monitoring disabled
+    set:
+      immich.monitoring.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: metrics-api
+        documentSelector:
+          path: metadata.labels.[app.kubernetes.io/controller]
+          value: server
