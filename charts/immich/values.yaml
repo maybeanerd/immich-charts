@@ -59,37 +59,6 @@ immich:
     # Set to false to disable ML features (face detection, object recognition, etc.)
     enabled: true
 
-# Controllers section is now managed by templates
-# You can still override specific values here
-controllers:
-  {}
-  # server:
-  #   replicas: 2
-  #   containers:
-  #     main:
-  #       resources:
-  #         requests:
-  #           memory: 512Mi
-  #         limits:
-  #           memory: 2Gi
-  # machine-learning:
-  #   replicas: 1
-  #   containers:
-  #     main:
-  #       resources:
-  #         limits:
-  #           nvidia.com/gpu: 1
-
-# Service configuration
-service:
-  {}
-  # Override service settings if needed
-  # server:
-  #   type: LoadBalancer
-
-# Service Monitor configuration
-serviceMonitor: {}
-
 # Persistence configuration
 persistence:
   library:
@@ -137,27 +106,3 @@ ingress:
         paths:
           - path: '/'
     tls: []
-
-# Pod annotations
-podAnnotations: {}
-#
-# Dependencies - PostgreSQL and Redis
-# Default configurations are managed in templates/postgresql.yaml and templates/redis.yaml
-# To use external services, set postgresql.enabled: false and/or redis.enabled: false
-#
-# You can override any PostgreSQL or Redis settings here as needed:
-#
-# postgresql:
-#   primary:
-#     persistence:
-#       size: 200Gi
-#       storageClass: fast-ssd
-#     resources:
-#       limits:
-#         memory: 4Gi
-#
-# redis:
-#   master:
-#     persistence:
-#       enabled: true
-#       size: 1Gi
