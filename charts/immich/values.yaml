@@ -15,14 +15,20 @@ immich:
   # ref: https://immich.app/docs/install/config-file/
   # This configuration is applied to the immich-config.yaml file
   # and mounted to both server and machine-learning containers
-  configuration:
-    {}
-    # trash:
-    #   enabled: false
-    #   days: 30
-    # storageTemplate:
-    #   enabled: true
-    #   template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+  #
+  # Set to {} (empty) to use Immich's internal defaults (default, recommended for GitOps).
+  # Set to null to manage configuration via the Immich web GUI.
+  # Set specific values to override defaults with declarative configuration (for GitOps).
+  # Empty {} is merged with Immich's internal defaults.
+  configuration: {}
+  # Example chart-managed configuration:
+  # configuration:
+  #   trash:
+  #     enabled: false
+  #     days: 30
+  #   storageTemplate:
+  #     enabled: true
+  #     template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
 
   # Monitoring configuration
   # Enable to expose Prometheus metrics endpoints and create ServiceMonitor

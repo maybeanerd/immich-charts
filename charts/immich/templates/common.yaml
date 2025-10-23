@@ -56,16 +56,20 @@ global:
 {{ end }}
 
 # Common configurations
+{{- if not (eq (typeOf .Values.immich.configuration) "<nil>") }}
 podAnnotations:
   checksum/config: '{{ .Values.immich.configuration | toYaml | sha256sum }}'
+{{- end }}
 
 persistence:
+  {{- if not (eq (typeOf .Values.immich.configuration) "<nil>") }}
   immich-config:
     type: configMap
     name: "{{ .Release.Name }}-immich-config"
     globalMounts:
       - path: /config
         readOnly: false
+  {{- end }}
   # Disable machine-learning-cache if machine learning is disabled
   {{- if not .Values.immich.machineLearning.enabled }}
   machine-learning-cache:
@@ -93,8 +97,12 @@ controllers:
           pullPolicy: IfNotPresent
         env:
           {{- include "immich.common.env" . | nindent 10 }}
+          {{- if .Values.immich.monitoring.enabled }}
           IMMICH_TELEMETRY_INCLUDE: 'all'
+          {{- end }}
+          {{- if not (eq (typeOf .Values.immich.configuration) "<nil>") }}
           IMMICH_CONFIG_FILE: /config/immich-config.yaml
+          {{- end }}
         probes:
           liveness:
             enabled: true

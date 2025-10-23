@@ -95,13 +95,17 @@ postgresql:
 ```yaml
 immich:
   # Application configuration - see https://immich.app/docs/install/config-file/
-  configuration:
-    trash:
-      enabled: false
-      days: 30
-    storageTemplate:
-      enabled: true
-      template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+  # Set to {} for defaults, null for GUI management, or provide values for GitOps
+  configuration: {}
+  
+  # Example GitOps configuration:
+  # configuration:
+  #   trash:
+  #     enabled: false
+  #     days: 30
+  #   storageTemplate:
+  #     enabled: true
+  #     template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
 
   # Enable/disable machine learning features
   machineLearning:
@@ -126,6 +130,16 @@ immich:
   redis:
     host: "redis.example.com"
 ```
+
+**Configuration Management Options:**
+
+The `immich.configuration` field determines how Immich settings are managed:
+
+- **Set to `{}` (default, recommended for GitOps)**: An empty config file is created and merged with Immich's internal defaults. This is the recommended approach for declarative deployments as configuration is version-controlled and predictable.
+- **Set to `null`**: No config file is mounted. Configuration is managed entirely through the Immich web GUI, with settings persisted to the database. Use this if you prefer GUI-based configuration management.
+- **Set with values**: A config file with your specific settings is created. These values override Immich's internal defaults. Use this for GitOps workflows where you need to customize specific settings declaratively.
+
+> **Note**: When using a config file (`{}` or with values), configuration is managed through the chart. GUI-based changes may be limited or ignored as the config file takes precedence.
 
 #### Storage Sizes (`persistence`)
 
@@ -203,9 +217,45 @@ redis:
 
 ## Advanced Configuration
 
-This chart uses the [bjw-s common library](https://github.com/bjw-s-labs/helm-charts/tree/common-4.3.0/charts/library/common), providing access to advanced Kubernetes features.
+This chart uses the [bjw-s common library](https://github.com/bjw-s-labs/helm-charts/tree/common-4.3.0/charts/library/common), providing access to advanced Kubernetes features. You can extend the chart by configuring any values supported by the common library.
 
-For detailed examples of node affinity, tolerations, security contexts, init containers, and more, see the [common library documentation](https://github.com/bjw-s-labs/helm-charts/blob/common-4.3.0/charts/library/common/values.yaml).
+### Example: Pod Annotations and Node Affinity
+
+Add custom annotations to all pods and configure node affinity:
+
+```yaml
+# Global pod annotations apply to all controllers
+podAnnotations:
+  backup.velero.io/backup-volumes: library,external,machine-learning-cache
+  prometheus.io/scrape: "true"
+  linkerd.io/inject: enabled
+
+# Controller-specific configuration
+controllers:
+  server:
+    pod:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+  
+  machine-learning:
+    pod:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+```
+
+This demonstrates how the chart can be extended with standard Kubernetes configurations. Global settings like `podAnnotations` apply to all controllers, while controller-specific settings can be customized individually. The common library supports many more features including tolerations, security contexts, init containers, and more.
+
+For comprehensive examples, see the [common library documentation](https://github.com/bjw-s-labs/helm-charts/blob/common-4.3.0/charts/library/common/values.yaml).
 
 ### Chart Architecture
 
