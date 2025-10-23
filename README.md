@@ -77,10 +77,11 @@ postgresql:
 Alternatively, use existing PVCs with `existingClaim`.
 
 #### Database Password
-Set a secure password for bundled PostgreSQL:
+Set a secure password for bundled PostgreSQL (when `postgresql.enabled: true`):
 
 ```yaml
 postgresql:
+  enabled: true
   global:
     postgresql:
       auth:
@@ -115,20 +116,25 @@ immich:
   monitoring:
     enabled: false
 
-  # External database (disables bundled PostgreSQL)
+  # Database configuration
   database:
-    host: "postgres.example.com"
-    username: "immich"
-    name: "immich"
-    password:
-      valueFrom:
-        secretKeyRef:
-          name: immich-db-secret
-          key: password
+    # Storage optimization for bundled PostgreSQL
+    storageType: hdd  # 'hdd' (default) or 'ssd'
+    
+    # External database (requires postgresql.enabled: false)
+    # host: "postgres.example.com"
+    # username: "immich"
+    # name: "immich"
+    # password:
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: immich-db-secret
+    #       key: password
 
-  # External Redis (disables bundled Redis)
-  redis:
-    host: "redis.example.com"
+  # Redis configuration
+  # For external Redis, set redis.enabled: false
+  # redis:
+  #   host: "redis.example.com"
 ```
 
 **Configuration Management Options:**
@@ -195,7 +201,9 @@ controllers:
 #### PostgreSQL (`postgresql`)
 
 ```yaml
+# Use bundled PostgreSQL
 postgresql:
+  enabled: true
   primary:
     persistence:
       size: 200Gi
@@ -203,16 +211,41 @@ postgresql:
     resources:
       limits:
         memory: 4Gi
+
+# Or use external PostgreSQL
+postgresql:
+  enabled: false
+
+immich:
+  database:
+    host: "postgres.example.com"
+    username: "immich"
+    name: "immich"
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: immich-db-secret
+          key: password
 ```
 
 #### Redis (`redis`)
 
 ```yaml
+# Use bundled Redis
 redis:
+  enabled: true
   master:
     persistence:
       enabled: true
       size: 1Gi
+
+# Or use external Redis
+redis:
+  enabled: false
+
+immich:
+  redis:
+    host: "redis.example.com"
 ```
 
 ## Advanced Configuration
