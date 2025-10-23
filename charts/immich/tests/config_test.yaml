@@ -1,0 +1,55 @@
+suite: test immich configuration management
+chart:
+  appVersion: '1.0.0'
+templates:
+  - templates/immich-config.yml
+
+tests:
+  - it: should create ConfigMap when configuration is empty object (default)
+    set:
+      immich.configuration: {}
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-immich-config
+      - isNotEmpty:
+          path: data
+
+  - it: should NOT create ConfigMap when configuration is null
+    set:
+      immich.configuration: null
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create ConfigMap with custom values
+    set:
+      immich.configuration:
+        trash:
+          enabled: false
+          days: 30
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ConfigMap
+      - matchRegex:
+          path: data["immich-config.yaml"]
+          pattern: 'trash:'
+
+  - it: should create config with storage template settings
+    set:
+      immich.configuration:
+        storageTemplate:
+          enabled: true
+          template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}'
+    asserts:
+      - hasDocuments:
+          count: 1
+      - matchRegex:
+          path: data["immich-config.yaml"]
+          pattern: 'storageTemplate:'
