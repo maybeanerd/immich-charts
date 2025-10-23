@@ -10,7 +10,9 @@ postgresql:
       auth:
         username: immich
         database: immich
-        password: null
+        {{- if .Values.immich.database.password }}
+        password: {{ .Values.immich.database.password }}
+        {{- end }}
     security:
       allowInsecureImages: true
   primary:
