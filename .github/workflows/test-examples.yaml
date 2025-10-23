@@ -16,6 +16,7 @@ jobs:
       matrix:
         example:
           - minimal
+          - custom-config
           - external-services
           - ml-disabled
     steps:
