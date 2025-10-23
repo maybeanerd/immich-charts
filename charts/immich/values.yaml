@@ -10,6 +10,11 @@ image:
   repository: ghcr.io/immich-app/immich-server
   tag: v2.2.1
 
+# Enable Prometheus metrics and ServiceMonitor
+# Set to true to expose metrics endpoints and create ServiceMonitor resource
+prometheus:
+  enabled: false
+
 immich:
   # configuration is immich-config.json converted to yaml
   # ref: https://immich.app/docs/install/config-file/
@@ -135,80 +140,24 @@ ingress:
 
 # Pod annotations
 podAnnotations: {}
-
 #
-# Dependencies
-# Override these settings as needed for your environment
+# Dependencies - PostgreSQL and Redis
+# Default configurations are managed in templates/postgresql.yaml and templates/redis.yaml
+# To use external services, set postgresql.enabled: false and/or redis.enabled: false
 #
-
-postgresql:
-  enabled: true
-  image:
-    registry: ghcr.io
-    repository: immich-app/postgres
-    tag: 14-vectorchord0.3.0-pgvectors0.3.0
-  global:
-    postgresql:
-      auth:
-        username: immich
-        database: immich
-        password: null
-    security:
-      allowInsecureImages: true
-  primary:
-    extraEnvVars:
-      - name: DB_STORAGE_TYPE
-        value: 'HDD' # TODO this should be configurable on top level somewhere
-      - name: POSTGRES_DB
-        value: immich
-      - name: POSTGRESQL_STARTUP_TIMEOUT
-        value: '256' # time in seconds, default is 60
-    customLivenessProbe:
-      tcpSocket:
-        port: tcp-postgresql
-    customReadinessProbe:
-      tcpSocket:
-        port: tcp-postgresql
-    customStartupProbe:
-      tcpSocket:
-        port: tcp-postgresql
-      failureThreshold: 256
-    persistence:
-      enabled: true
-      # existingClaim: "name-of-existing-claim" # Set an existing claim here to use it instead of creating a new one
-      accessMode: ReadWriteOnce
-      size: 100Gi
-      storageClass: null # provide your storage class
-    resources:
-      requests:
-        memory: '512Mi'
-      limits:
-        memory: '2Gi'
-    initdb:
-      scripts:
-        # This should be unnecessary as we set the POSTGRES_DB env var, but for some reason sometimes the DB is not created
-        01-create-db.sql: |
-          DO $$
-          BEGIN
-            IF NOT EXISTS (
-              SELECT FROM pg_database WHERE datname = 'immich'
-            ) THEN
-              CREATE DATABASE immich OWNER immich;
-            END IF;
-          END
-          $$;
-        02-create-extensions.sql: |
-          CREATE EXTENSION cube;
-          CREATE EXTENSION earthdistance;
-          CREATE EXTENSION vectors;
-    containerSecurityContext:
-      readOnlyRootFilesystem: false
-
-redis:
-  enabled: true
-  architecture: standalone
-  master:
-    persistence:
-      enabled: false
-  auth:
-    enabled: false
+# You can override any PostgreSQL or Redis settings here as needed:
+#
+# postgresql:
+#   primary:
+#     persistence:
+#       size: 200Gi
+#       storageClass: fast-ssd
+#     resources:
+#       limits:
+#         memory: 4Gi
+#
+# redis:
+#   master:
+#     persistence:
+#       enabled: true
+#       size: 1Gi

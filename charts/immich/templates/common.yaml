@@ -8,9 +8,21 @@ Common environment variables shared across all Immich components
 {{- /* Database configuration */ -}}
 {{- $dbHost := .Values.immich.database.host | default (printf "%s-postgresql" .Release.Name) -}}
 {{- $dbPort := .Values.immich.database.port | default 5432 -}}
-{{- $dbUsername := .Values.immich.database.username | default .Values.postgresql.global.postgresql.auth.username -}}
-{{- $dbName := .Values.immich.database.name | default .Values.postgresql.global.postgresql.auth.database -}}
-{{- $dbPassword := .Values.immich.database.password | default .Values.postgresql.global.postgresql.auth.password -}}
+{{- $dbUsername := .Values.immich.database.username | default "immich" -}}
+{{- $dbName := .Values.immich.database.name | default "immich" -}}
+{{- $dbPassword := .Values.immich.database.password -}}
+{{- if not .Values.immich.database.host -}}
+  {{- /* Use bundled PostgreSQL password if no external host is specified */ -}}
+  {{- if .Values.postgresql -}}
+    {{- if .Values.postgresql.global -}}
+      {{- if .Values.postgresql.global.postgresql -}}
+        {{- $dbUsername = .Values.postgresql.global.postgresql.auth.username | default $dbUsername -}}
+        {{- $dbName = .Values.postgresql.global.postgresql.auth.database | default $dbName -}}
+        {{- $dbPassword = .Values.postgresql.global.postgresql.auth.password | default $dbPassword -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
 
 {{- /* Redis configuration */ -}}
 {{- $redisHost := .Values.immich.redis.host | default (printf "%s-redis-master" .Release.Name) -}}
@@ -183,11 +195,11 @@ service:
         port: 2283
         protocol: HTTP
       metrics-api:
-        enabled: false
+        enabled: {{ .Values.prometheus.enabled }}
         port: 8081
         protocol: HTTP
       metrics-ms:
-        enabled: false
+        enabled: {{ .Values.prometheus.enabled }}
         port: 8082
         protocol: HTTP
   machine-learning:
@@ -201,14 +213,17 @@ service:
         port: 3003
         protocol: HTTP
 
+{{- if .Values.prometheus.enabled }}
 serviceMonitor:
   server:
+    enabled: true
     serviceName: server
     endpoints:
       - port: metrics-api
         scheme: http
       - port: metrics-ms
         scheme: http
+{{- end }}
 
 ingress:
   server:
@@ -225,6 +240,12 @@ ingress:
     tls:
       {{- .Values.ingress.server.tls | toYaml | nindent 6 }}
 {{- end -}}
+
+{{- /* First merge PostgreSQL and Redis defaults */ -}}
+{{- $_ := mergeOverwrite .Values (include "immich.postgresql.defaults" . | fromYaml) -}}
+{{- $_ := mergeOverwrite .Values (include "immich.redis.defaults" . | fromYaml) -}}
+
+{{- /* Then merge hardcodedValues which includes auto-disable logic */ -}}
 {{- $_ := mergeOverwrite .Values (include "immich.hardcodedValues" . | fromYaml) -}}
 
 {{/* Render the templates */}}

@@ -75,6 +75,7 @@ helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
 
 | Parameter                       | Description                                                                      | Default  |
 | ------------------------------- | -------------------------------------------------------------------------------- | -------- |
+| `prometheus.enabled`            | Enable Prometheus metrics endpoints and ServiceMonitor                           | `false`  |
 | `immich.configuration`          | Immich app configuration (see [docs](https://immich.app/docs/install/config-file/)) | `{}` |
 | `immich.database`               | Database connection configuration (see below)                                    | `{}` |
 | `immich.redis`                  | Redis connection configuration (see below)                                       | `{}` |
@@ -82,9 +83,25 @@ helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
 
 > **Note**: The image version is managed by the chart and should not be overridden by users.
 
+#### Prometheus Monitoring
+
+Enable Prometheus metrics collection:
+
+```yaml
+prometheus:
+  enabled: true  # Enables metrics endpoints and creates ServiceMonitor
+```
+
+When enabled, this will:
+- Expose metrics on ports 8081 (API metrics) and 8082 (Microservices metrics)
+- Create a ServiceMonitor resource for Prometheus Operator
+- Allow monitoring of Immich performance and health
+
 #### Database Configuration (`immich.database`)
 
-Configure the database connection. If not specified, defaults to the bundled PostgreSQL instance:
+Configure the database connection. If not specified, defaults to the bundled PostgreSQL instance.
+
+> **Note**: When using an external database, set `postgresql.enabled: false` to disable the bundled PostgreSQL.
 
 ```yaml
 immich:
@@ -105,7 +122,9 @@ immich:
 
 #### Redis Configuration (`immich.redis`)
 
-Configure the Redis connection. If not specified, defaults to the bundled Redis instance:
+Configure the Redis connection. If not specified, defaults to the bundled Redis instance.
+
+> **Note**: When using external Redis, set `redis.enabled: false` to disable the bundled Redis.
 
 ```yaml
 immich:
@@ -182,22 +201,40 @@ controllers:
 
 ### Database (PostgreSQL)
 
-| Parameter                                      | Description                                    | Default          |
-| ---------------------------------------------- | ---------------------------------------------- | ---------------- |
-| `postgresql.enabled`                           | Deploy bundled PostgreSQL                      | `true`           |
-| `postgresql.global.postgresql.auth.username`   | PostgreSQL username                            | `immich`         |
-| `postgresql.global.postgresql.auth.database`   | PostgreSQL database name                       | `immich`         |
-| `postgresql.global.postgresql.auth.password`   | PostgreSQL password                            | `null` (required)|
-| `postgresql.global.postgresql.auth.existingSecret` | Use existing secret for password           | `null`           |
-| `postgresql.primary.persistence.size`          | PostgreSQL volume size                         | `100Gi`          |
-| `postgresql.primary.persistence.storageClass`  | PostgreSQL storage class                       | `null` (required)|
-| `postgresql.primary.resources`                 | PostgreSQL resource requests/limits            | See values.yaml  |
+Default configuration is managed in `templates/postgresql.yaml`. You can override settings in `values.yaml`:
+
+```yaml
+postgresql:
+  primary:
+    persistence:
+      size: 200Gi
+      storageClass: fast-ssd
+    resources:
+      limits:
+        memory: 4Gi
+```
+
+Key settings:
+- Default size: `100Gi`
+- Vector extensions pre-installed (cube, earthdistance, vectors)
+- Optimized for Immich workload
 
 ### Redis
 
-| Parameter       | Description           | Default |
-| --------------- | --------------------- | ------- |
-| `redis.enabled` | Deploy bundled Redis  | `true`  |
+Default configuration is managed in `templates/redis.yaml`. You can override settings in `values.yaml`:
+
+```yaml
+redis:
+  master:
+    persistence:
+      enabled: true
+      size: 1Gi
+```
+
+Key settings:
+- Standalone architecture
+- Persistence disabled by default
+- Auth disabled for simplicity
 
 ### Required Changes
 
@@ -362,21 +399,17 @@ immich:
 
 ### Monitoring
 
-Enable Prometheus metrics:
+Enable Prometheus metrics collection:
 
 ```yaml
-service:
-  server:
-    ports:
-      metrics-api:
-        enabled: true
-      metrics-ms:
-        enabled: true
-
-serviceMonitor:
-  server:
-    enabled: true
+prometheus:
+  enabled: true
 ```
+
+This automatically:
+- Enables metrics endpoints (ports 8081 and 8082)
+- Creates a ServiceMonitor resource for Prometheus Operator
+- Exposes API and microservices metrics for monitoring
 
 ### High Availability
 
