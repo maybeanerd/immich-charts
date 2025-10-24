@@ -30,17 +30,13 @@ helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
 
 ### What You MUST Configure
 
-Before deploying Immich, you **must** configure these values:
+Before deploying Immich, you **must** configure:
 
-1. **Storage Classes** - All persistent volumes need a `storageClass`:
-   - `persistence.library.storageClass` - User library (photos/videos)
-   - `persistence.external.storageClass` - External libraries
-   - `persistence.machine-learning-cache.storageClass` - ML cache (if ML enabled)
-   - `postgresql.primary.persistence.storageClass` - Database (if using bundled PostgreSQL)
+**Database Password** - Set a secure password when using bundled PostgreSQL:
+- `immich.database.password` - Direct password value
+- Or use `immich.database.password.valueFrom.secretKeyRef` for existing secrets
 
-2. **Database Password** - Set a secure password:
-   - `immich.database.password` - Required for bundled PostgreSQL
-   - Or use `immich.database.password.valueFrom.secretKeyRef` for existing secrets
+> **Note**: If your cluster doesn't have a default StorageClass, you'll also need to set storage classes for all persistent volumes (see "Storage Configuration" below).
 
 ### What You Might Want to Configure
 
@@ -48,7 +44,9 @@ Common customizations based on your deployment needs:
 
 #### Basic Configuration
 - **Ingress** - Enable and configure hostname for web access (`ingress.server`)
-- **Storage Sizes** - Adjust volume sizes based on your needs (`persistence.*.size`)
+- **Storage Configuration**:
+  - **Storage Classes** - Override default StorageClass if needed (`persistence.*.storageClass`, `postgresql.primary.persistence.storageClass`)
+  - **Storage Sizes** - Adjust volume sizes based on your needs (`persistence.*.size`)
 - **Database Storage Type** - Optimize for SSD storage (`immich.database.storageType: ssd`)
 
 #### Resource Management
