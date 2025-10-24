@@ -10,10 +10,19 @@ Common environment variables shared across all Immich components
 {{- $dbPort := .Values.immich.database.port | default 5432 -}}
 {{- $dbUsername := .Values.immich.database.username | default "immich" -}}
 {{- $dbName := .Values.immich.database.name | default "immich" -}}
-{{- /* Use postgresql.auth.password for bundled DB, immich.database.password for external */ -}}
+{{- /* Database password configuration */ -}}
+{{- /* For bundled PostgreSQL: use auth.password or reference existingSecret */ -}}
+{{- /* For external DB: use immich.database.password (can be direct value or valueFrom) */ -}}
 {{- $dbPassword := "" -}}
+{{- $dbPasswordFrom := dict -}}
 {{- if .Values.postgresql.enabled -}}
-  {{- $dbPassword = .Values.postgresql.auth.password | default "" -}}
+  {{- if .Values.postgresql.auth.existingSecret -}}
+    {{- /* Reference the existing secret used by PostgreSQL */ -}}
+    {{- $secretKey := .Values.postgresql.auth.secretKeys.userPasswordKey | default "password" -}}
+    {{- $dbPasswordFrom = dict "valueFrom" (dict "secretKeyRef" (dict "name" .Values.postgresql.auth.existingSecret "key" $secretKey)) -}}
+  {{- else -}}
+    {{- $dbPassword = .Values.postgresql.auth.password | default "" -}}
+  {{- end -}}
 {{- else -}}
   {{- $dbPassword = .Values.immich.database.password | default "" -}}
 {{- end -}}
@@ -32,7 +41,10 @@ Common environment variables shared across all Immich components
 DB_HOSTNAME: {{ $dbHost | quote }}
 DB_USERNAME: {{ $dbUsername | quote }}
 DB_DATABASE_NAME: {{ $dbName | quote }}
-{{- if kindIs "map" $dbPassword }}
+{{- if $dbPasswordFrom }}
+DB_PASSWORD:
+  {{- $dbPasswordFrom | toYaml | nindent 2 }}
+{{- else if kindIs "map" $dbPassword }}
 DB_PASSWORD:
   {{- $dbPassword | toYaml | nindent 2 }}
 {{- else if $dbPassword }}
