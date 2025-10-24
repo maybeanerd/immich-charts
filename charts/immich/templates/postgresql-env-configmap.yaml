@@ -1,12 +1,11 @@
 {{- if .Values.postgresql.enabled }}
-{{- /* Build env vars from immich.database.storageType and optional overrides */ -}}
-{{- $defaultEnv := dict 
+{{- /* Generate DB_STORAGE_TYPE from immich.database.storageType */ -}}
+{{- $storageTypeEnv := dict 
   "DB_STORAGE_TYPE" (.Values.immich.database.storageType | upper | default "HDD")
-  "POSTGRES_DB" "immich"
-  "POSTGRESQL_STARTUP_TIMEOUT" "256"
 -}}
-{{- /* Merge with user-provided custom env vars (user values take precedence) */ -}}
-{{- $finalEnv := merge (default dict .Values.postgresql.primary.env) $defaultEnv -}}
+{{- /* Merge: user values.yaml env vars + generated DB_STORAGE_TYPE */ -}}
+{{- /* User values take precedence (first arg to merge wins) */ -}}
+{{- $finalEnv := merge (default dict .Values.postgresql.primary.env) $storageTypeEnv -}}
 ---
 apiVersion: v1
 kind: ConfigMap
