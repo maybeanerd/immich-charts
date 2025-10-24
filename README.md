@@ -26,34 +26,6 @@ helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
 
 **Important**: Do not copy the full `values.yaml` from this repository. Only set the values you want to override.
 
-### Accessing Immich
-
-After installation, access Immich using one of these methods:
-
-**Port Forward** (for testing):
-```bash
-kubectl port-forward -n immich svc/immich-server 2283:2283
-# Access at http://localhost:2283
-```
-
-**LoadBalancer Service** (for production without ingress):
-```yaml
-service:
-  server:
-    type: LoadBalancer
-```
-
-**Ingress** (for production with domain):
-```yaml
-ingress:
-  server:
-    enabled: true
-    hosts:
-      - host: immich.yourdomain.com
-        paths:
-          - path: /
-```
-
 ## Configuration Guide
 
 ### What You MUST Configure
@@ -165,6 +137,34 @@ The chart deploys two main controllers:
 - **machine-learning** - ML service for face detection, object recognition, etc. (automatically disabled when `immich.machineLearning.enabled: false`)
 
 Configuration uses semantic objects (`immich.database`, `immich.redis`, etc.) that are automatically transformed into appropriate environment variables for all components.
+
+## Accessing Immich
+
+After installation, access Immich using one of these methods:
+
+**Port Forward** (for testing):
+```bash
+kubectl port-forward -n immich svc/immich-server 2283:2283
+# Access at http://localhost:2283
+```
+
+**LoadBalancer Service** (for production without ingress):
+```yaml
+service:
+  server:
+    type: LoadBalancer
+```
+
+**Ingress** (for production with domain):
+```yaml
+ingress:
+  server:
+    enabled: true
+    hosts:
+      - host: immich.yourdomain.com
+        paths:
+          - path: /
+```
 
 ## Uninstalling
 
