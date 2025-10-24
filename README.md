@@ -26,6 +26,34 @@ helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
 
 **Important**: Do not copy the full `values.yaml` from this repository. Only set the values you want to override.
 
+### Accessing Immich
+
+After installation, access Immich using one of these methods:
+
+**Port Forward** (for testing):
+```bash
+kubectl port-forward -n immich svc/immich-server 2283:2283
+# Access at http://localhost:2283
+```
+
+**LoadBalancer Service** (for production without ingress):
+```yaml
+service:
+  server:
+    type: LoadBalancer
+```
+
+**Ingress** (for production with domain):
+```yaml
+ingress:
+  server:
+    enabled: true
+    hosts:
+      - host: immich.yourdomain.com
+        paths:
+          - path: /
+```
+
 ## Configuration Guide
 
 ### What You MUST Configure
@@ -43,11 +71,11 @@ Before deploying Immich, you **must** configure:
 Common customizations based on your deployment needs:
 
 #### Basic Configuration
-- **Ingress** - Enable and configure hostname for web access (`ingress.server`)
 - **Storage Configuration**:
   - **Storage Classes** - Override default StorageClass if needed (`persistence.*.storageClass`, `postgresql.primary.persistence.storageClass`)
   - **Storage Sizes** - Adjust volume sizes based on your needs (`persistence.*.size`)
 - **Database Storage Type** - Optimize for SSD storage (`immich.database.storageType: ssd`)
+- **Ingress** - Optionally enable ingress for web access (`ingress.server.enabled: true`). Disabled by default - access via port-forward or LoadBalancer service
 
 #### Resource Management
 - **Machine Learning** - Disable to save resources (`immich.machineLearning.enabled: false`)

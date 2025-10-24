@@ -103,10 +103,10 @@ persistence:
         main:
           - path: /cache
 
-# Ingress configuration
+# Ingress configuration (disabled by default)
 ingress:
   server:
-    enabled: true
+    enabled: false
     annotations:
       nginx.ingress.kubernetes.io/proxy-body-size: '0'
     hosts:

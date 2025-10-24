@@ -52,16 +52,3 @@ persistence:
   external:
     storageClass: null # Change to your storage class unless you want to use you default provider
     size: 100Gi
-
-# Optional: Adjust ingress
-ingress:
-  main:
-    enabled: true
-    hosts:
-      - host: immich.yourdomain.com
-        paths:
-          - path: /
-            pathType: Prefix
-            service:
-              identifier: server
-              port: http
