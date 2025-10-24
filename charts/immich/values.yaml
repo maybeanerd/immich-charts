@@ -37,11 +37,6 @@ immich:
 
   # Database configuration
   database:
-    # Storage optimization for bundled PostgreSQL
-    # Set to 'hdd' for hard disk drives (default) or 'ssd' for solid state drives
-    # Only applies when using the bundled PostgreSQL (postgresql.enabled: true)
-    storageType: hdd
-
     # Required: Set a secure database password
     # This password is used for both internal and external databases
     password: null
@@ -123,11 +118,72 @@ ingress:
 # When disabled, configure connection details in immich.database / immich.redis above
 postgresql:
   enabled: true
-  # Override any default settings here
-  # See charts/immich/templates/postgresql.yaml for defaults
+  # Use Immich's custom PostgreSQL image with vector extensions
+  image:
+    registry: ghcr.io
+    repository: immich-app/postgres
+    tag: 14-vectorchord0.3.0-pgvectors0.3.0
+  global:
+    postgresql:
+      auth:
+        username: immich
+        database: immich
+        # Password set dynamically via template merge (see templates/postgresql.yaml)
+    security:
+      allowInsecureImages: true
+  primary:
+    # Environment variables for the Immich PostgreSQL image
+    # To change to SSD: copy this entire extraEnvVars block and change HDD to SSD
+    extraEnvVars:
+      - name: DB_STORAGE_TYPE
+        value: HDD
+      - name: POSTGRES_DB
+        value: immich
+      - name: POSTGRESQL_STARTUP_TIMEOUT
+        value: '256'
+    customLivenessProbe:
+      tcpSocket:
+        port: tcp-postgresql
+    customReadinessProbe:
+      tcpSocket:
+        port: tcp-postgresql
+    customStartupProbe:
+      tcpSocket:
+        port: tcp-postgresql
+      failureThreshold: 256
+    persistence:
+      enabled: true
+      accessMode: ReadWriteOnce
+      size: 100Gi
+      storageClass: null
+    resources:
+      requests:
+        memory: '512Mi'
+      limits:
+        memory: '2Gi'
+    initdb:
+      scripts:
+        01-create-db.sql: |
+          DO $$
+          BEGIN
+            IF NOT EXISTS (
+              SELECT FROM pg_database WHERE datname = 'immich'
+            ) THEN
+              CREATE DATABASE immich OWNER immich;
+            END IF;
+          END
+          $$;
+        02-create-extensions.sql: |
+          CREATE EXTENSION cube;
+          CREATE EXTENSION earthdistance;
+          CREATE EXTENSION vectors;
+    containerSecurityContext:
+      readOnlyRootFilesystem: false
 
 redis:
   enabled: true
+  # Use standalone architecture (single instance, no replicas)
+  architecture: standalone
   # Disable auth for internal Redis (auth is typically only needed for external Redis)
   auth:
     enabled: false
@@ -135,5 +191,3 @@ redis:
   master:
     persistence:
       enabled: false
-  replica:
-    replicaCount: 0

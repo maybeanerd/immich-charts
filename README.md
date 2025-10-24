@@ -120,9 +120,6 @@ immich:
 
   # Database configuration
   database:
-    # Storage optimization for bundled PostgreSQL
-    storageType: hdd  # 'hdd' (default) or 'ssd'
-    
     # External database (requires postgresql.enabled: false)
     # host: "postgres.example.com"
     # username: "immich"
@@ -213,6 +210,17 @@ postgresql:
     resources:
       limits:
         memory: 4Gi
+
+# Optimize for SSD storage
+postgresql:
+  primary:
+    extraEnvVars:
+      - name: DB_STORAGE_TYPE
+        value: SSD
+      - name: POSTGRES_DB
+        value: immich
+      - name: POSTGRESQL_STARTUP_TIMEOUT
+        value: '256'
 
 # Or use external PostgreSQL
 postgresql:

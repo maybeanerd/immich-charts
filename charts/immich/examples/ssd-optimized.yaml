@@ -1,0 +1,39 @@
+# SSD-optimized configuration example
+# This example shows how to optimize PostgreSQL for SSD storage
+
+immich:
+  # Required: Set a secure database password
+  database:
+    password: CHANGE-ME-TO-A-SECURE-PASSWORD
+
+# PostgreSQL optimized for SSD storage
+postgresql:
+  primary:
+    persistence:
+      storageClass: null # Change to your SSD storage class
+      size: 100Gi
+    # Environment variables for SSD optimization
+    extraEnvVars:
+      - name: DB_STORAGE_TYPE
+        value: SSD
+      - name: POSTGRES_DB
+        value: immich
+      - name: POSTGRESQL_STARTUP_TIMEOUT
+        value: '256'
+    resources:
+      requests:
+        memory: 1Gi
+      limits:
+        memory: 4Gi
+
+# Persistence configuration
+persistence:
+  library:
+    storageClass: null # Change to your storage class
+    size: 500Gi
+  external:
+    storageClass: null # Change to your storage class
+    size: 200Gi
+  machine-learning-cache:
+    storageClass: null # Change to your storage class
+    size: 20Gi
