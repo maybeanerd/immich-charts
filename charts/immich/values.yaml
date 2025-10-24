@@ -136,12 +136,13 @@ postgresql:
     security:
       allowInsecureImages: true
   primary:
-    # Environment variables are generated from immich.database.storageType
-    # ConfigMap reference is set below (subcharts need it in values.yaml)
+    # Environment variables for PostgreSQL
+    # Will be merged with ConfigMap created by templates/postgresql-env-configmap.yaml
+    # Override any of these or add custom vars - they merge with defaults defined here
+    env:
+      POSTGRES_DB: immich
+      POSTGRESQL_STARTUP_TIMEOUT: '256'
     extraEnvVarsCM: immich-postgresql-env
-    # Optional: Override or add custom env vars (merged with generated ones)
-    # env:
-    #   CUSTOM_VAR: custom-value
     customLivenessProbe:
       tcpSocket:
         port: tcp-postgresql
