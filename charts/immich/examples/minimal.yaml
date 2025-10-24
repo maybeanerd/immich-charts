@@ -2,9 +2,10 @@
 # This is the bare minimum configuration needed to deploy Immich
 
 immich:
-  # Required: Set a secure database password
   database:
+    # Direct password (simple, good for testing)
     password: CHANGE-ME-TO-A-SECURE-PASSWORD
+    # For production, consider using a secret reference (see external-services.yaml)
 
 # Required: Set storage classes for your cluster
 persistence:
