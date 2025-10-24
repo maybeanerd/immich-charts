@@ -1,12 +1,9 @@
 # SSD-optimized configuration example
-# This example shows how to optimize PostgreSQL for SSD storage
 
 immich:
   database:
-    # Set storage type to 'ssd' for SSD-optimized PostgreSQL settings
     storageType: ssd
 
-# PostgreSQL with SSD storage and password
 postgresql:
   auth:
     password: CHANGE-ME-TO-A-SECURE-PASSWORD
