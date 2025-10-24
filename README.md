@@ -121,6 +121,9 @@ immich:
 
   # Database configuration
   database:
+    # Storage type for bundled PostgreSQL: 'hdd' or 'ssd'
+    storageType: hdd
+    
     # External database (requires postgresql.enabled: false)
     # host: "postgres.example.com"
     # username: "immich"
@@ -212,11 +215,10 @@ postgresql:
       limits:
         memory: 4Gi
 
-# Optimize for SSD storage (override individual env vars)
-postgresql:
-  primary:
-    env:
-      DB_STORAGE_TYPE: SSD  # Changes only storage type, other defaults inherited
+# Optimize for SSD storage
+immich:
+  database:
+    storageType: ssd  # Automatically configures PostgreSQL for SSD
 
 # Or use external PostgreSQL
 postgresql:

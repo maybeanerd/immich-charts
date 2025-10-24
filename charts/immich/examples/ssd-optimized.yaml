@@ -2,19 +2,18 @@
 # This example shows how to optimize PostgreSQL for SSD storage
 
 immich:
-  # Required: Set a secure database password
   database:
+    # Required: Set a secure database password
     password: CHANGE-ME-TO-A-SECURE-PASSWORD
+    # Set storage type to 'ssd' for SSD-optimized PostgreSQL settings
+    storageType: ssd
 
-# PostgreSQL optimized for SSD storage
+# PostgreSQL with SSD storage
 postgresql:
   primary:
     persistence:
       storageClass: null # Change to your SSD storage class
       size: 100Gi
-    # Override only the storage type - other env vars inherited from defaults
-    env:
-      DB_STORAGE_TYPE: SSD
     resources:
       requests:
         memory: 1Gi

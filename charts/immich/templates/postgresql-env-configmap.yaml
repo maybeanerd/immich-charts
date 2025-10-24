@@ -1,4 +1,13 @@
 {{- if .Values.postgresql.enabled }}
+{{- /* Build env vars from immich.database.storageType and optional overrides */ -}}
+{{- $defaultEnv := dict 
+  "DB_STORAGE_TYPE" (.Values.immich.database.storageType | upper | default "HDD")
+  "POSTGRES_DB" "immich"
+  "POSTGRESQL_STARTUP_TIMEOUT" "256"
+-}}
+{{- /* Merge with user-provided custom env vars (user values take precedence) */ -}}
+{{- $finalEnv := merge (default dict .Values.postgresql.primary.env) $defaultEnv -}}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,7 +18,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 data:
-  {{- range $key, $value := .Values.postgresql.primary.env }}
+  {{- range $key, $value := $finalEnv }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
 {{- end }}
