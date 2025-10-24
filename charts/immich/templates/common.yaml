@@ -239,9 +239,8 @@ ingress:
       {{- .Values.ingress.server.tls | toYaml | nindent 6 }}
 {{- end -}}
 
-{{- /* First merge PostgreSQL and Redis defaults */ -}}
+{{- /* First merge PostgreSQL defaults */ -}}
 {{- $_ := mergeOverwrite .Values (include "immich.postgresql.defaults" . | fromYaml) -}}
-{{- $_ := mergeOverwrite .Values (include "immich.redis.defaults" . | fromYaml) -}}
 
 {{- /* Then merge hardcodedValues which includes auto-disable logic */ -}}
 {{- $_ := mergeOverwrite .Values (include "immich.hardcodedValues" . | fromYaml) -}}

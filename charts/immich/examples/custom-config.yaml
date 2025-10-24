@@ -8,6 +8,10 @@
 #   helm install immich immich/immich -f custom-config.yaml
 
 immich:
+  # Required: Set a secure database password
+  database:
+    password: CHANGE-ME-TO-A-SECURE-PASSWORD
+
   # Custom configuration values
   # These override Immich's internal defaults
   configuration:
@@ -45,12 +49,7 @@ persistence:
     storageClass: null # Change to your storage class unless you want to use you default provider
     size: 100Gi
 
-# Required: PostgreSQL password
 postgresql:
-  global:
-    postgresql:
-      auth:
-        password: CHANGE-ME-TO-A-SECURE-PASSWORD
   primary:
     persistence:
       storageClass: null # Change to your storage class unless you want to use you default provider
