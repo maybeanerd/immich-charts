@@ -42,19 +42,21 @@ immich:
     # Only applies when using the bundled PostgreSQL (postgresql.enabled: true)
     storageType: hdd
 
-    # External database connection (requires postgresql.enabled: false)
-    # host: "postgres.example.com"
-    # port: 5432
-    # username: "immich"
-    # name: "immich"
-    # password: "password"
-    #
+    # Required: Set a secure database password
+    # This password is used for both internal and external databases
+    password: null
     # To use a secret for the password:
     # password:
     #   valueFrom:
     #     secretKeyRef:
     #       name: immich-db-secret
     #       key: password
+
+    # External database connection (requires postgresql.enabled: false)
+    # host: "postgres.example.com"
+    # port: 5432
+    # username: "immich"
+    # name: "immich"
 
   # Redis configuration
   # For external Redis, set redis.enabled: false and configure connection below
