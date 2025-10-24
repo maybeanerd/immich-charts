@@ -126,5 +126,12 @@ postgresql:
 
 redis:
   enabled: true
-  # Override any default settings here
-  # See charts/immich/templates/redis.yaml for defaults
+  # Disable auth for internal Redis (auth is typically only needed for external Redis)
+  auth:
+    enabled: false
+  # Disable persistence for internal Redis (ephemeral cache is sufficient)
+  master:
+    persistence:
+      enabled: false
+  replica:
+    replicaCount: 0
