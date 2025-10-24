@@ -132,15 +132,16 @@ postgresql:
     security:
       allowInsecureImages: true
   primary:
-    # Environment variables for the Immich PostgreSQL image
-    # To change to SSD: copy this entire extraEnvVars block and change HDD to SSD
-    extraEnvVars:
-      - name: DB_STORAGE_TYPE
-        value: HDD
-      - name: POSTGRES_DB
-        value: immich
-      - name: POSTGRESQL_STARTUP_TIMEOUT
-        value: '256'
+    # Environment variables for the Immich PostgreSQL image (as object/map)
+    # Override individual values without copying the entire structure
+    # Example: to change to SSD, just set: postgresql.primary.env.DB_STORAGE_TYPE: SSD
+    env:
+      DB_STORAGE_TYPE: HDD
+      POSTGRES_DB: immich
+      POSTGRESQL_STARTUP_TIMEOUT: '256'
+    # Reference to ConfigMap created by parent chart (see templates/postgresql-env-configmap.yaml)
+    # Fixed name used due to Helm subchart rendering order (subcharts process before parent templates)
+    extraEnvVarsCM: immich-postgresql-env
     customLivenessProbe:
       tcpSocket:
         port: tcp-postgresql

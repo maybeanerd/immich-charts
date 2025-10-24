@@ -1,6 +1,6 @@
 {{- define "immich.postgresql.defaults" -}}
 {{- /* Pass user-provided password to postgresql subchart */ -}}
-{{- /* Note: extraEnvVars must be in values.yaml (subcharts render first) */ -}}
+{{- /* ConfigMap reference is in values.yaml (must be there for subchart rendering order) */ -}}
 postgresql:
   global:
     postgresql:
