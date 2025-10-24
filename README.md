@@ -10,101 +10,172 @@ Do not use this in production. It's a true [zero-ver](https://semver.org/#spec-i
 
 Feel free to play around with it. Please try and test it. Breaking changes will be marked in release notes, so please keep an eye out for them when updating version.
 
-# Immich Charts
+# Immich Helm Chart
 
-Installs [Immich](https://github.com/immich-app/immich), a self-hosted photo and video backup solution directly 
-from your mobile phone. 
+Installs [Immich](https://github.com/immich-app/immich), a self-hosted photo and video backup solution, on Kubernetes.
 
-# Goal
+This chart leverages the [bjw-s common-library](https://github.com/bjw-s-labs/helm-charts/tree/common-4.3.0/charts/library/common) to make configuration as easy as possible while providing enterprise-grade flexibility.
 
-This repo contains helm charts the immich community developed to help deploy Immich on Kubernetes cluster.
+## Installation
 
-It leverages the bjw-s [common-library chart](https://github.com/bjw-s-labs/helm-charts/tree/common-4.3.0/charts/library/common) to make configuration as easy as possible. 
-
-# Installation
-
-```
-$ helm install --create-namespace --namespace immich immich oci://ghcr.io/maybeanerd/immich-charts/immich -f values.yaml
+```bash
+helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
+  --namespace immich --create-namespace \
+  -f your-values.yaml
 ```
 
-You should not copy the full values.yaml from this repository. Only set the values that you want to override.
+**Important**: Do not copy the full `values.yaml` from this repository. Only set the values you want to override.
 
-# Configuration
+## Configuration Guide
 
-This Helm chart for Immich is highly configurable. Below are the most important values you may want or need to change for your deployment.  
-**See `charts/immich/values.yaml` for the full list of options.**
+### What You MUST Configure
 
-| Parameter                                                   | Description                                                                                                                                   | Default                                                                                 |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `immich.configuration`                                      | Immich app configuration (see [docs](https://immich.app/docs/install/config-file/))                                                           | `{}`                                                                                    |
-| `controllers.server.containers.main.env.IMMICH_CONFIG_FILE` | Path to the immich config file. If you don't want to use the config file, and instead configure immich using the GUI, set this to `null`.     | `/config/immich-config.yaml`                                                            |
-| `service.server.ports.metrics-api.enabled`                  | Make immich expose it's metrics endpoints                                                                                                     | `false`                                                                                 |
-| `service.server.ports.metrics-ms.enabled`                   | Make immich expose it's metrics endpoints                                                                                                     | `false`                                                                                 |
-| `controllers.machine-learning.enabled`                      | Enable machine learning service                                                                                                               | `true`                                                                                  |
-| `persistence.library.existingClaim`                         | If you dont want this chart to create a PVC for you, e.g. because you already have one, you can pass the name of your existing claim instead. | `null`                                                                                  |
-| `persistence.library.storageClass`                          | Storage class for user library                                                                                                                | `null` (must be set, unless you use an existing claim)                                  |
-| `persistence.library.size`                                  | Size of the user library volume                                                                                                               | `10Gi`                                                                                  |
-| `persistence.external.enabled`                              | If a persistent volume should be used for external libraries                                                                                  | `true`                                                                                  |
-| `persistence.external.existingClaim`                        | If you dont want this chart to create a PVC for you, e.g. because you already have one, you can pass the name of your existing claim instead. | `null`                                                                                  |
-| `persistence.external.storageClass`                         | Storage class for external volume                                                                                                             | `null` (must be set, unless you use an existing claim)                                  |
-| `persistence.external.size`                                 | Size of the external volume                                                                                                                   | `10Gi`                                                                                  |
-| `persistence.machine-learning-cache.existingClaim`          | If you dont want this chart to create a PVC for you, e.g. because you already have one, you can pass the name of your existing claim instead. | `null`                                                                                  |
-| `persistence.machine-learning-cache.storageClass`           | Storage class for external volume                                                                                                             | `null` (must be set, unless you use an existing claim)                                  |
-| `persistence.machine-learning-cache.type`                   | Type for ML cache volume                                                                                                                      | `persistentVolumeClaim` (set to `emptyDir` to not persist ML models)                    |
-| `ingress.server.enabled`                                    | Enable ingress for Immich server                                                                                                              | `false`                                                                                 |
-| `ingress.server.hosts`                                      | Ingress hosts                                                                                                                                 | `immich.local`                                                                          |
-| `postgresql.enabled`                                        | Deploy bundled PostgreSQL                                                                                                                     | `true`                                                                                  |
-| `postgresql.global.postgresql.auth.password`                | PostgreSQL password (should be a long, generated, random string)                                                                              | `null` (must be set, unless you use an existing secret)                                 |
-| `postgresql.global.postgresql.auth.existingSecret`          | PostgreSQL password from a kubernetes secret. Set as alternative to passing the password above.                                               | `null`                                                                                  |
-| `postgresql.primary.persistence.size`                       | PostgreSQL volume size                                                                                                                        | `100Gi`                                                                                 |
-| `postgresql.primary.persistence.existingClaim`              | If you dont want this chart to create a PVC for you, e.g. because you already have one, you can pass the name of your existing claim instead. | `null`                                                                                  |
-| `postgresql.primary.persistence.storageClass`               | PostgreSQL storage class                                                                                                                      | `null` (must be set, unless you use an existing claim)                                  |
-| `postgresql.primary.resources`                              | PostgreSQL resource requests/limits                                                                                                           | `{ requests: { memory: "512Mi", limits: memory: "2Gi"} }` (see values.yaml for example) |
-| `redis.enabled`                                             | Deploy bundled Redis                                                                                                                          | `true`                                                                                  |
+Before deploying Immich, you **must** configure:
 
-### Required Changes
+**Database Password** - Set a secure password when using bundled PostgreSQL:
+- `immich.database.password` - Direct password value
+- Or use `immich.database.password.valueFrom.secretKeyRef` for existing secrets
 
-- **Database password:**  
-  You must set a secure password for PostgreSQL, ideally using Kubernetes secrets.  
-  Set `postgresql.global.postgresql.auth.password` or use `postgresql.global.postgresql.auth.existingSecret` if possible.
+> **Note**: If your cluster doesn't have a default StorageClass, you'll also need to set storage classes for all persistent volumes (see "Storage Configuration" below).
 
-- **Storage classes:**  
-  Set `persistence.library.storageClass`, `persistence.external.storageClass`, `persistence.machine-learning-cache.storageClass`,and `postgresql.primary.persistence.storageClass` to match your cluster’s storage provisioner.
+### What You Might Want to Configure
 
-  Alernatively, create the required PVCs yourself and set `existingClaim` for each volume to use them.
+Common customizations based on your deployment needs:
 
-### Useful Changes
+#### Basic Configuration
+- **Storage Configuration**:
+  - **Storage Classes** - Override default StorageClass if needed (`persistence.*.storageClass`, `postgresql.primary.persistence.storageClass`)
+  - **Storage Sizes** - Adjust volume sizes based on your needs (`persistence.*.size`)
+- **Database Storage Type** - Optimize for SSD storage (`immich.database.storageType: ssd`)
+- **Ingress** - Optionally enable ingress for web access (`ingress.server.enabled: true`). Disabled by default - access via port-forward or LoadBalancer service
 
-- **Ingress:**  
-  Set `ingress.server.enabled: true` and configure `ingress.server.hosts` and TLS as needed.
+#### Resource Management
+- **Machine Learning** - Disable to save resources (`immich.machineLearning.enabled: false`)
+- **Resource Limits** - Set CPU/memory for workloads (`controllers.*.resources`)
+- **Replicas** - Scale the server component (`controllers.server.replicas`)
 
-- **Resource requests/limits:**  
-  Adjust `postgresql.primary.resources` and other resource settings to fit your environment.
+#### External Services
+- **External Database** - Use managed PostgreSQL (`postgresql.enabled: false`, configure `immich.database.*`)
+- **External Redis** - Use managed Redis (`redis.enabled: false`, configure `immich.redis.*`)
 
+#### Advanced Features
+- **Application Configuration** - Manage Immich settings via config file (`immich.configuration`)
+- **Monitoring** - Enable Prometheus metrics (`immich.monitoring.enabled`)
+- **GPU Acceleration** - Add GPU resources for ML (`controllers.machine-learning.resources.limits`)
 
----
+### Configuration Examples
 
-**Note:**  
-This table is not exhaustive. See `charts/immich/values.yaml` for all options and further documentation links.
+We provide tested examples for common deployment scenarios:
 
-## Chart architecture 
+- **[minimal.yaml](charts/immich/examples/minimal.yaml)** - Basic setup with bundled PostgreSQL and Redis
+- **[bundled-with-secret.yaml](charts/immich/examples/bundled-with-secret.yaml)** - Bundled PostgreSQL using Kubernetes secrets for password management
+- **[ssd-optimized.yaml](charts/immich/examples/ssd-optimized.yaml)** - PostgreSQL optimized for SSD storage
+- **[external-services.yaml](charts/immich/examples/external-services.yaml)** - Using external PostgreSQL and Redis with secret references
+- **[ml-disabled.yaml](charts/immich/examples/ml-disabled.yaml)** - Deployment without machine learning features
+- **[custom-config.yaml](charts/immich/examples/custom-config.yaml)** - Custom Immich application configuration
 
-This chart uses the [common library](https://github.com/bjw-s-labs/helm-charts/tree/common-4.3.0/charts/library/common). 
+Deploy an example:
+```bash
+helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
+  --namespace immich --create-namespace \
+  -f https://raw.githubusercontent.com/maybeanerd/immich-charts/main/charts/immich/examples/minimal.yaml
+```
 
-You can freely add more top level keys to be applied to all the components, please reference [the common library's values.yaml](https://github.com/bjw-s-labs/helm-charts/blob/common-4.3.0/charts/library/common/values.yaml) to see what keys are available.
+⚠️ **Important**: Examples use placeholder values. Update passwords, storage classes, sizes, and hostnames before production use.
 
-## Uninstalling the Chart
+## Key Configuration Reference
 
-To see the currently installed Immich chart:
+### Application Configuration (`immich.configuration`)
 
-```console
+Controls how Immich application settings are managed:
+
+- **`{}` (empty object, recommended)** - Enables config file with Immich defaults. Best for GitOps/declarative deployments.
+- **`null`** - No config file. All settings managed via Immich web GUI and stored in database.
+- **Custom values** - Provide specific settings that override Immich defaults. See [custom-config.yaml](charts/immich/examples/custom-config.yaml).
+
+For available settings, see the [Immich configuration documentation](https://immich.app/docs/install/config-file/).
+
+### Database Storage Type (`immich.database.storageType`)
+
+Set to `ssd` or `hdd` to optimize PostgreSQL for your storage:
+
+```yaml
+immich:
+  database:
+    storageType: ssd  # or 'hdd' (default)
+```
+
+This automatically configures PostgreSQL environment variables for optimal performance. See [ssd-optimized.yaml](charts/immich/examples/ssd-optimized.yaml) for a complete example.
+
+### External Services
+
+To use external/managed services instead of bundled ones:
+
+1. Disable the bundled service: `postgresql.enabled: false` and/or `redis.enabled: false`
+2. Configure connection details under `immich.database.*` or `immich.redis.*`
+
+See [external-services.yaml](charts/immich/examples/external-services.yaml) for a complete example.
+
+## Advanced Configuration
+
+This chart is built on the [bjw-s common library](https://github.com/bjw-s-labs/helm-charts/tree/common-4.3.0/charts/library/common), which provides extensive Kubernetes configuration options:
+
+- Pod annotations and labels
+- Node affinity and tolerations
+- Security contexts
+- Init containers
+- Sidecars
+- And much more
+
+For advanced configuration patterns, refer to the [common library documentation](https://github.com/bjw-s-labs/helm-charts/blob/common-4.3.0/charts/library/common/values.yaml).
+
+### Chart Architecture
+
+The chart deploys two main controllers:
+
+- **server** - Main Immich API and web interface
+- **machine-learning** - ML service for face detection, object recognition, etc. (automatically disabled when `immich.machineLearning.enabled: false`)
+
+Configuration uses semantic objects (`immich.database`, `immich.redis`, etc.) that are automatically transformed into appropriate environment variables for all components.
+
+## Accessing Immich
+
+After installation, access Immich using one of these methods:
+
+**Port Forward** (for testing):
+```bash
+kubectl port-forward -n immich svc/immich-server 2283:2283
+# Access at http://localhost:2283
+```
+
+**LoadBalancer Service** (for production without ingress):
+```yaml
+service:
+  server:
+    type: LoadBalancer
+```
+
+**Ingress** (for production with domain):
+```yaml
+ingress:
+  server:
+    enabled: true
+    hosts:
+      - host: immich.yourdomain.com
+        paths:
+          - path: /
+```
+
+## Uninstalling
+
+View installed releases:
+```bash
 helm ls --namespace immich
 ```
 
-To uninstall/delete the `immich` chart:
-
-```console
+Uninstall the chart:
+```bash
 helm delete --namespace immich immich
 ```
 
-The command removes all the Kubernetes components associated with the chart and deletes the release.
+This removes all Kubernetes resources associated with the release. Persistent volumes may need to be manually deleted depending on your storage class retention policy.

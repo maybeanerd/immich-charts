@@ -1,0 +1,24 @@
+{{- if .Values.postgresql.enabled }}
+{{- /* Generate DB_STORAGE_TYPE from immich.database.storageType */ -}}
+{{- $storageTypeEnv := dict 
+  "DB_STORAGE_TYPE" (.Values.immich.database.storageType | upper | default "HDD")
+-}}
+{{- /* Merge: user values.yaml env vars + generated DB_STORAGE_TYPE */ -}}
+{{- /* User values take precedence (first arg to merge wins) */ -}}
+{{- $finalEnv := merge (default dict .Values.postgresql.primary.env) $storageTypeEnv -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: immich-postgresql-env
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  {{- range $key, $value := $finalEnv }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}
+

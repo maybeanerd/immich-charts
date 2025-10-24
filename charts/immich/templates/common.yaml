@@ -1,13 +1,262 @@
 ---
 {{- include "bjw-s.common.loader.init" . }}
 
+{{/*
+Common environment variables shared across all Immich components
+*/}}
+{{- define "immich.common.env" -}}
+{{- /* Database configuration */ -}}
+{{- $dbHost := .Values.immich.database.host | default (printf "%s-postgresql" .Release.Name) -}}
+{{- $dbPort := .Values.immich.database.port | default 5432 -}}
+{{- $dbUsername := .Values.immich.database.username | default "immich" -}}
+{{- $dbName := .Values.immich.database.name | default "immich" -}}
+{{- /* Database password configuration */ -}}
+{{- /* For bundled PostgreSQL: use auth.password or reference existingSecret */ -}}
+{{- /* For external DB: use immich.database.password (can be direct value or valueFrom) */ -}}
+{{- $dbPassword := "" -}}
+{{- $dbPasswordFrom := dict -}}
+{{- if .Values.postgresql.enabled -}}
+  {{- if .Values.postgresql.auth.existingSecret -}}
+    {{- /* Reference the existing secret used by PostgreSQL (key must be 'password') */ -}}
+    {{- $dbPasswordFrom = dict "valueFrom" (dict "secretKeyRef" (dict "name" .Values.postgresql.auth.existingSecret "key" "password")) -}}
+  {{- else -}}
+    {{- $dbPassword = .Values.postgresql.auth.password | default "" -}}
+  {{- end -}}
+{{- else -}}
+  {{- $dbPassword = .Values.immich.database.password | default "" -}}
+{{- end -}}
+
+{{- /* Redis configuration */ -}}
+{{- $redisHost := .Values.immich.redis.host | default (printf "%s-redis-master" .Release.Name) -}}
+{{- $redisPort := .Values.immich.redis.port | default 6379 -}}
+{{- $redisHostname := printf "%s:%v" $redisHost $redisPort -}}
+{{- if not .Values.immich.redis.port -}}
+  {{- $redisHostname = $redisHost -}}
+{{- end -}}
+
+{{- /* Machine Learning configuration - always uses internal service */ -}}
+{{- $mlUrl := printf "http://%s-machine-learning:3003" .Release.Name -}}
+
+DB_HOSTNAME: {{ $dbHost | quote }}
+DB_USERNAME: {{ $dbUsername | quote }}
+DB_DATABASE_NAME: {{ $dbName | quote }}
+{{- if $dbPasswordFrom }}
+DB_PASSWORD:
+  {{- $dbPasswordFrom | toYaml | nindent 2 }}
+{{- else if kindIs "map" $dbPassword }}
+DB_PASSWORD:
+  {{- $dbPassword | toYaml | nindent 2 }}
+{{- else if $dbPassword }}
+DB_PASSWORD: {{ $dbPassword | quote }}
+{{- else }}
+DB_PASSWORD: ""
+{{- end }}
+REDIS_HOSTNAME: {{ $redisHostname | quote }}
+IMMICH_MACHINE_LEARNING_URL: {{ $mlUrl | quote }}
+{{- end -}}
+
 {{- define "immich.hardcodedValues" -}}
 # Set the nameOverride based on the release name if no override has been set
 {{ if not .Values.global.nameOverride }}
 global:
   nameOverride: "{{ .Release.Name }}"
 {{ end }}
+
+# Common configurations
+{{- if not (eq (typeOf .Values.immich.configuration) "<nil>") }}
+podAnnotations:
+  checksum/config: '{{ .Values.immich.configuration | toYaml | sha256sum }}'
+{{- end }}
+
+persistence:
+  {{- if not (eq (typeOf .Values.immich.configuration) "<nil>") }}
+  immich-config:
+    type: configMap
+    name: "{{ .Release.Name }}-immich-config"
+    globalMounts:
+      - path: /config
+        readOnly: false
+  {{- end }}
+  # Disable machine-learning-cache if machine learning is disabled
+  {{- if not .Values.immich.machineLearning.enabled }}
+  machine-learning-cache:
+    enabled: false
+  {{- end }}
+
+controllers:
+  server:
+    enabled: true
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      main:
+        enabled: true
+        ports:
+          - name: http
+            containerPort: 2283
+          - name: metrics-api
+            containerPort: 8081
+          - name: metrics-ms
+            containerPort: 8082
+        image:
+          repository: ghcr.io/immich-app/immich-server
+          tag: {{ .Values.image.tag | quote }}
+          pullPolicy: IfNotPresent
+        env:
+          {{- include "immich.common.env" . | nindent 10 }}
+          {{- if .Values.immich.monitoring.enabled }}
+          IMMICH_TELEMETRY_INCLUDE: 'all'
+          {{- end }}
+          {{- if not (eq (typeOf .Values.immich.configuration) "<nil>") }}
+          IMMICH_CONFIG_FILE: /config/immich-config.yaml
+          {{- end }}
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/server/ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/server/ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/server/ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 30
+
+  machine-learning:
+    enabled: {{ .Values.immich.machineLearning.enabled }}
+    strategy: RollingUpdate
+    replicas: 1
+    containers:
+      main:
+        enabled: true
+        ports:
+          - name: http
+            containerPort: 3003
+        image:
+          repository: ghcr.io/immich-app/immich-machine-learning
+          tag: {{ .Values.image.tag | quote }}
+          pullPolicy: IfNotPresent
+        env:
+          {{- include "immich.common.env" . | nindent 10 }}
+          TRANSFORMERS_CACHE: /cache
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: http
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 60
+
+service:
+  server:
+    enabled: true
+    primary: true
+    type: ClusterIP
+    controller: server
+    ports:
+      http:
+        enabled: true
+        primary: true
+        port: 2283
+        protocol: HTTP
+      metrics-api:
+        enabled: {{ .Values.immich.monitoring.enabled }}
+        port: 8081
+        protocol: HTTP
+      metrics-ms:
+        enabled: {{ .Values.immich.monitoring.enabled }}
+        port: 8082
+        protocol: HTTP
+  machine-learning:
+    enabled: {{ .Values.immich.machineLearning.enabled }}
+    type: ClusterIP
+    controller: machine-learning
+    ports:
+      http:
+        enabled: true
+        primary: true
+        port: 3003
+        protocol: HTTP
+
+{{- if .Values.immich.monitoring.enabled }}
+serviceMonitor:
+  server:
+    enabled: true
+    serviceName: server
+    endpoints:
+      - port: metrics-api
+        scheme: http
+      - port: metrics-ms
+        scheme: http
+{{- end }}
+
+ingress:
+  server:
+    enabled: {{ .Values.ingress.server.enabled }}
+    annotations:
+      {{- .Values.ingress.server.annotations | toYaml | nindent 6 }}
+    hosts:
+      - host: {{ (index .Values.ingress.server.hosts 0).host }}
+        paths:
+          - path: {{ (index (index .Values.ingress.server.hosts 0).paths 0).path }}
+            service:
+              identifier: server
+              port: http
+    tls:
+      {{- .Values.ingress.server.tls | toYaml | nindent 6 }}
 {{- end -}}
+
+{{- /* Merge hardcodedValues which includes auto-disable logic */ -}}
 {{- $_ := mergeOverwrite .Values (include "immich.hardcodedValues" . | fromYaml) -}}
 
 {{/* Render the templates */}}
