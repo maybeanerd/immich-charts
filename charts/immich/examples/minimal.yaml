@@ -1,11 +1,14 @@
 # Minimal configuration example
 # This is the bare minimum configuration needed to deploy Immich
 
-immich:
-  database:
-    # Direct password (simple, good for testing)
+# Set password for bundled PostgreSQL
+postgresql:
+  auth:
     password: CHANGE-ME-TO-A-SECURE-PASSWORD
-    # For production, consider using a secret reference (see external-services.yaml)
+  primary:
+    persistence:
+      storageClass: null # Change to your storage class unless you want to use you default provider
+      size: 50Gi
 
 # Required: Set storage classes for your cluster
 persistence:
@@ -18,10 +21,3 @@ persistence:
   machine-learning-cache:
     storageClass: null # Change to your storage class unless you want to use you default provider
     size: 10Gi
-
-# PostgreSQL persistence
-postgresql:
-  primary:
-    persistence:
-      storageClass: null # Change to your storage class unless you want to use you default provider
-      size: 50Gi

@@ -3,13 +3,13 @@
 
 immich:
   database:
-    # Required: Set a secure database password
-    password: CHANGE-ME-TO-A-SECURE-PASSWORD
     # Set storage type to 'ssd' for SSD-optimized PostgreSQL settings
     storageType: ssd
 
-# PostgreSQL with SSD storage
+# PostgreSQL with SSD storage and password
 postgresql:
+  auth:
+    password: CHANGE-ME-TO-A-SECURE-PASSWORD
   primary:
     persistence:
       storageClass: null # Change to your SSD storage class

@@ -41,21 +41,19 @@ immich:
     # Controls PostgreSQL optimization settings
     storageType: hdd
 
-    # Required: Set a secure database password
-    # This password is used for both internal and external databases
-    password: null
-    # To use a secret for the password:
+    # External database connection (requires postgresql.enabled: false)
+    # When using bundled PostgreSQL, set password at postgresql.auth.password instead
+    # host: "postgres.example.com"
+    # port: 5432
+    # username: "immich"
+    # name: "immich"
+    # password: "your-password"
+    # Or use secret reference:
     # password:
     #   valueFrom:
     #     secretKeyRef:
     #       name: immich-db-secret
     #       key: password
-
-    # External database connection (requires postgresql.enabled: false)
-    # host: "postgres.example.com"
-    # port: 5432
-    # username: "immich"
-    # name: "immich"
 
   # Redis configuration
   # For external Redis, set redis.enabled: false and configure connection below
@@ -127,6 +125,15 @@ postgresql:
     registry: ghcr.io
     repository: immich-app/postgres
     tag: 14-vectorchord0.3.0-pgvectors0.3.0
+  auth:
+    # Disable postgres superuser to prevent ArgoCD drift from random postgres-password
+    # Init scripts run as 'immich' user which has sufficient privileges
+    enablePostgresUser: false
+    # REQUIRED: Set password for bundled PostgreSQL
+    # This password is used by both PostgreSQL and the Immich application
+    password: null # CHANGE THIS!
+    # For ArgoCD users: Use existingSecret to prevent drift from password changes
+    # existingSecret: immich-postgresql-secret
   global:
     postgresql:
       auth:
