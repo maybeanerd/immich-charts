@@ -1,7 +1,6 @@
 # Minimal configuration example
 # This is the bare minimum configuration needed to deploy Immich
 
-# Set password for bundled PostgreSQL
 postgresql:
   auth:
     password: CHANGE-ME-TO-A-SECURE-PASSWORD

@@ -17,9 +17,8 @@ Common environment variables shared across all Immich components
 {{- $dbPasswordFrom := dict -}}
 {{- if .Values.postgresql.enabled -}}
   {{- if .Values.postgresql.auth.existingSecret -}}
-    {{- /* Reference the existing secret used by PostgreSQL */ -}}
-    {{- $secretKey := .Values.postgresql.auth.secretKeys.userPasswordKey | default "password" -}}
-    {{- $dbPasswordFrom = dict "valueFrom" (dict "secretKeyRef" (dict "name" .Values.postgresql.auth.existingSecret "key" $secretKey)) -}}
+    {{- /* Reference the existing secret used by PostgreSQL (key must be 'password') */ -}}
+    {{- $dbPasswordFrom = dict "valueFrom" (dict "secretKeyRef" (dict "name" .Values.postgresql.auth.existingSecret "key" "password")) -}}
   {{- else -}}
     {{- $dbPassword = .Values.postgresql.auth.password | default "" -}}
   {{- end -}}

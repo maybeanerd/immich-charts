@@ -1,8 +1,6 @@
 # Example: Disabling machine learning features
-# Useful to save resources when ML features are not needed
 # Note: This disables face detection, object recognition, and smart search
 
-# Set password for bundled PostgreSQL
 postgresql:
   auth:
     password: CHANGE-ME-TO-A-SECURE-PASSWORD
