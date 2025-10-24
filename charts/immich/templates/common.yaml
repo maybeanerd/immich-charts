@@ -239,10 +239,10 @@ ingress:
       {{- .Values.ingress.server.tls | toYaml | nindent 6 }}
 {{- end -}}
 
-{{- /* First merge PostgreSQL defaults */ -}}
+{{- /* Merge PostgreSQL password (storage type uses YAML anchors) */ -}}
 {{- $_ := mergeOverwrite .Values (include "immich.postgresql.defaults" . | fromYaml) -}}
 
-{{- /* Then merge hardcodedValues which includes auto-disable logic */ -}}
+{{- /* Merge hardcodedValues which includes auto-disable logic */ -}}
 {{- $_ := mergeOverwrite .Values (include "immich.hardcodedValues" . | fromYaml) -}}
 
 {{/* Render the templates */}}

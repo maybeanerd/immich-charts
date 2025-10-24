@@ -1,65 +1,12 @@
 {{- define "immich.postgresql.defaults" -}}
+{{- /* Pass user-provided password to postgresql subchart */ -}}
+{{- /* Note: extraEnvVars must be in values.yaml (subcharts render first) */ -}}
 postgresql:
-  enabled: true
-  image:
-    registry: ghcr.io
-    repository: immich-app/postgres
-    tag: 14-vectorchord0.3.0-pgvectors0.3.0
   global:
     postgresql:
       auth:
-        username: immich
-        database: immich
         {{- if .Values.immich.database.password }}
         password: {{ .Values.immich.database.password }}
         {{- end }}
-    security:
-      allowInsecureImages: true
-  primary:
-    extraEnvVars:
-      - name: DB_STORAGE_TYPE
-        value: {{ upper (default "hdd" .Values.immich.database.storageType) | quote }}
-      - name: POSTGRES_DB
-        value: immich
-      - name: POSTGRESQL_STARTUP_TIMEOUT
-        value: '256'
-    customLivenessProbe:
-      tcpSocket:
-        port: tcp-postgresql
-    customReadinessProbe:
-      tcpSocket:
-        port: tcp-postgresql
-    customStartupProbe:
-      tcpSocket:
-        port: tcp-postgresql
-      failureThreshold: 256
-    persistence:
-      enabled: true
-      accessMode: ReadWriteOnce
-      size: 100Gi
-      storageClass: null
-    resources:
-      requests:
-        memory: '512Mi'
-      limits:
-        memory: '2Gi'
-    initdb:
-      scripts:
-        01-create-db.sql: |
-          DO $$
-          BEGIN
-            IF NOT EXISTS (
-              SELECT FROM pg_database WHERE datname = 'immich'
-            ) THEN
-              CREATE DATABASE immich OWNER immich;
-            END IF;
-          END
-          $$;
-        02-create-extensions.sql: |
-          CREATE EXTENSION cube;
-          CREATE EXTENSION earthdistance;
-          CREATE EXTENSION vectors;
-    containerSecurityContext:
-      readOnlyRootFilesystem: false
 {{- end -}}
 
