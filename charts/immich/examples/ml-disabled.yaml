@@ -2,13 +2,19 @@
 # Useful to save resources when ML features are not needed
 # Note: This disables face detection, object recognition, and smart search
 
+# Set password for bundled PostgreSQL
+postgresql:
+  auth:
+    password: CHANGE-ME-TO-A-SECURE-PASSWORD
+  primary:
+    persistence:
+      storageClass: null # Change to your storage class unless you want to use you default provider
+      size: 50Gi
+
 # Disable machine learning
 immich:
   machineLearning:
     enabled: false
-  # Required: Set a secure database password
-  database:
-    password: CHANGE-ME-TO-A-SECURE-PASSWORD
 
 persistence:
   library:
@@ -17,9 +23,3 @@ persistence:
   external:
     storageClass: null # Change to your storage class unless you want to use you default provider
     size: 50Gi
-
-postgresql:
-  primary:
-    persistence:
-      storageClass: null # Change to your storage class unless you want to use you default provider
-      size: 50Gi

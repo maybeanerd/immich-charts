@@ -7,11 +7,12 @@
 # Install with:
 #   helm install immich immich/immich -f custom-config.yaml
 
-immich:
-  # Required: Set a secure database password
-  database:
+# Set password for bundled PostgreSQL
+postgresql:
+  auth:
     password: CHANGE-ME-TO-A-SECURE-PASSWORD
 
+immich:
   # Custom configuration values
   # These override Immich's internal defaults
   configuration:
