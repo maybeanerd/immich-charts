@@ -131,9 +131,23 @@ postgresql:
     enablePostgresUser: false
     # REQUIRED: Set password for bundled PostgreSQL
     # This password is used by both PostgreSQL and the Immich application
+    #
+    # Option 1: Direct password (simple, good for testing)
     password: null # CHANGE THIS!
-    # For ArgoCD users: Use existingSecret to prevent drift from password changes
+    #
+    # Option 2: Reference an existing secret (recommended for production)
+    # First create a secret with:
+    #   kubectl create secret generic immich-postgresql-secret \
+    #     --from-literal=password='YOUR-SECURE-PASSWORD'
+    # Then uncomment this line:
     # existingSecret: immich-postgresql-secret
+    #
+    # Option 3: Use a secret with custom key name
+    # secretKeys:
+    #   adminPasswordKey: my-custom-key
+    # existingSecret: my-secret-name
+    #
+    # For ArgoCD: Use existingSecret to prevent drift from password changes
   global:
     postgresql:
       auth:
