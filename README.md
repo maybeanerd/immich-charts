@@ -42,6 +42,7 @@ We provide tested example configurations for common scenarios. See the [examples
 - **[minimal.yaml](charts/immich/examples/minimal.yaml)** - Bare minimum setup with bundled services
 - **[external-services.yaml](charts/immich/examples/external-services.yaml)** - Using external PostgreSQL and Redis
 - **[ml-disabled.yaml](charts/immich/examples/ml-disabled.yaml)** - Deployment without machine learning features
+- **[ssd-optimized.yaml](charts/immich/examples/ssd-optimized.yaml)** - PostgreSQL optimized for SSD storage
 
 Deploy an example:
 ```bash
@@ -211,16 +212,11 @@ postgresql:
       limits:
         memory: 4Gi
 
-# Optimize for SSD storage
+# Optimize for SSD storage (override individual env vars)
 postgresql:
   primary:
-    extraEnvVars:
-      - name: DB_STORAGE_TYPE
-        value: SSD
-      - name: POSTGRES_DB
-        value: immich
-      - name: POSTGRESQL_STARTUP_TIMEOUT
-        value: '256'
+    env:
+      DB_STORAGE_TYPE: SSD  # Changes only storage type, other defaults inherited
 
 # Or use external PostgreSQL
 postgresql:

@@ -12,14 +12,9 @@ postgresql:
     persistence:
       storageClass: null # Change to your SSD storage class
       size: 100Gi
-    # Environment variables for SSD optimization
-    extraEnvVars:
-      - name: DB_STORAGE_TYPE
-        value: SSD
-      - name: POSTGRES_DB
-        value: immich
-      - name: POSTGRESQL_STARTUP_TIMEOUT
-        value: '256'
+    # Override only the storage type - other env vars inherited from defaults
+    env:
+      DB_STORAGE_TYPE: SSD
     resources:
       requests:
         memory: 1Gi
