@@ -1,0 +1,50 @@
+{{- /*
+Configuration validation checks
+These checks run before deployment to catch common misconfigurations
+*/}}
+
+{{- /* Check: Bundled PostgreSQL requires password */}}
+{{- if .Values.postgresql.enabled }}
+  {{- if and (not .Values.postgresql.auth.password) (not .Values.postgresql.auth.existingSecret) }}
+    {{- fail "ERROR: PostgreSQL password is required when using bundled database. Set either 'postgresql.auth.password' or 'postgresql.auth.existingSecret'." }}
+  {{- end }}
+  {{- if and .Values.postgresql.auth.password .Values.postgresql.auth.existingSecret }}
+    {{- fail "ERROR: Cannot set both 'postgresql.auth.password' and 'postgresql.auth.existingSecret'. Choose one password method." }}
+  {{- end }}
+{{- end }}
+
+{{- /* Check: External PostgreSQL requires configuration */}}
+{{- if not .Values.postgresql.enabled }}
+  {{- if not .Values.immich.database.host }}
+    {{- fail "ERROR: External database host is required when 'postgresql.enabled' is false. Set 'immich.database.host'." }}
+  {{- end }}
+  {{- if not .Values.immich.database.password }}
+    {{- fail "ERROR: External database password is required when 'postgresql.enabled' is false. Set 'immich.database.password' (direct value or valueFrom secret reference)." }}
+  {{- end }}
+{{- end }}
+
+{{- /* Check: External Redis requires host */}}
+{{- if not .Values.redis.enabled }}
+  {{- if not .Values.immich.redis.host }}
+    {{- fail "ERROR: External Redis host is required when 'redis.enabled' is false. Set 'immich.redis.host'." }}
+  {{- end }}
+{{- end }}
+
+{{- /* Check: Database storage type validation */}}
+{{- if .Values.immich.database.storageType }}
+  {{- $validTypes := list "hdd" "ssd" }}
+  {{- if not (has (.Values.immich.database.storageType | lower) $validTypes) }}
+    {{- fail (printf "ERROR: Invalid database storage type '%s'. Must be either 'hdd' or 'ssd'." .Values.immich.database.storageType) }}
+  {{- end }}
+{{- end }}
+
+{{- /* Check: Machine learning cache requires machine learning enabled */}}
+{{- if and (not .Values.immich.machineLearning.enabled) .Values.persistence }}
+  {{- if hasKey .Values.persistence "machine-learning-cache" }}
+    {{- $mlCache := index .Values.persistence "machine-learning-cache" }}
+    {{- if $mlCache.enabled }}
+      {{- fail "ERROR: machine-learning-cache persistence is enabled but 'immich.machineLearning.enabled' is false. Either enable machine learning or disable the cache." }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+

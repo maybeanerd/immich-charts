@@ -7,10 +7,13 @@
 # Install with:
 #   helm install immich immich/immich -f custom-config.yaml
 
-# Set password for bundled PostgreSQL
 postgresql:
   auth:
     password: CHANGE-ME-TO-A-SECURE-PASSWORD
+  primary:
+    persistence:
+      storageClass: null # Change to your storage class unless you want to use you default provider
+      size: 50Gi
 
 immich:
   # Custom configuration values
@@ -49,12 +52,6 @@ persistence:
   external:
     storageClass: null # Change to your storage class unless you want to use you default provider
     size: 100Gi
-
-postgresql:
-  primary:
-    persistence:
-      storageClass: null # Change to your storage class unless you want to use you default provider
-      size: 50Gi
 
 # Optional: Adjust ingress
 ingress:
