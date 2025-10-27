@@ -7,64 +7,87 @@ on:
       - feature/pr-action
 
 jobs:
-  build_lint_validate_diff:
-    name: lint, validate and diff from main
-    permissions: write-all
+  lint_and_test:
+    name: Lint and unit tests
+    permissions: read-all
     runs-on: ubuntu-latest
     container:
       image: alpine/helm:3.19.0
     steps:
-      - name: checkout pr head
+      - name: Checkout PR head
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
 
-      - name: install chart dependencies
+      - name: Install chart dependencies
         run: helm dependency build charts/immich
 
-      - name: install helm-unittest plugin
+      - name: Install helm-unittest plugin
         run: helm plugin install https://github.com/helm-unittest/helm-unittest
 
-      - name: run unit tests
+      - name: Run unit tests
         run: helm unittest charts/immich
 
-      - name: lint helm chart
+      - name: Lint helm chart
         run: helm lint charts/immich -f charts/immich/examples/minimal.yaml
 
-      - name: prepare
-        run: mkdir -p charts/immich/build
-      - name: create full manifest from pr head
-        run: helm template immich charts/immich -f charts/immich/examples/minimal.yaml | tee charts/immich/build/manifest.yaml
-
-      - name: checkout main
+  deploy_test:
+    name: Deploy to test cluster
+    permissions: read-all
+    runs-on: ubuntu-latest
+    needs: lint_and_test
+    steps:
+      - name: Checkout PR head
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
-          ref: main
-          path: main
 
-      - name: install chart dependencies
-        run: helm dependency build main/charts/immich
+      - name: Install chart dependencies
+        run: helm dependency build charts/immich
 
-      - name: prepare
-        run: mkdir -p main/charts/immich/build
-      - name: create full manifest from main
-        run: |
-          # Use minimal.yaml from PR branch (current) to show chart changes, not example changes
-          # Example-specific changes are already shown in test-examples pipeline
-          helm template immich main/charts/immich -f charts/immich/examples/minimal.yaml | tee main/charts/immich/build/manifest.yaml
-
-      - name: create diff comment
-        uses: int128/diff-action@c9db036f910af1c65d025ee9734f0aa2b0a47c39 # v1.58.0
+      - name: Create kind cluster
+        uses: helm/kind-action@0025e74a8c7512023d06dc019c617aa3cf561fde # v1.10.0
         with:
-          base: main/charts/immich/build
-          head: charts/immich/build
-          comment-header: '## 📦 Chart Changes (using `minimal.yaml` config)'
-          comment-footer: |
-            <details>
-            <summary>📖 About this diff</summary>
+          cluster_name: immich-test
+          wait: 30s
 
-            This diff shows **chart template changes** between main and this PR, both rendered with the **current** [`minimal.yaml`](../blob/${{ github.event.pull_request.head.sha }}/charts/immich/examples/minimal.yaml) configuration.
+      - name: Deploy Immich with minimal config
+        run: |
+          echo "Deploying Immich chart..."
+          helm install immich charts/immich \
+            --namespace immich \
+            --create-namespace \
+            -f charts/immich/examples/minimal.yaml \
+            --wait \
+            --timeout 5m
 
-            This isolates changes to the chart itself. For example-specific diffs, see the individual example comments below.
-            </details>
+      - name: Verify deployment
+        run: |
+          echo "Checking deployment status..."
+          kubectl get pods -n immich
+          kubectl get svc -n immich
+          kubectl get pvc -n immich
+
+          echo "Waiting for pods to be ready..."
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=immich -n immich --timeout=300s || true
+
+          echo "Final pod status:"
+          kubectl get pods -n immich -o wide
+
+          echo "Checking for errors in logs:"
+          kubectl logs -n immich -l app.kubernetes.io/instance=immich --tail=50 --all-containers=true || true
+
+      - name: Debug on failure
+        if: failure()
+        run: |
+          echo "=== Pod Status ==="
+          kubectl get pods -n immich -o wide
+
+          echo "=== Pod Descriptions ==="
+          kubectl describe pods -n immich
+
+          echo "=== Events ==="
+          kubectl get events -n immich --sort-by='.lastTimestamp'
+
+          echo "=== Logs from all containers ==="
+          kubectl logs -n immich -l app.kubernetes.io/instance=immich --all-containers=true --tail=100 || true

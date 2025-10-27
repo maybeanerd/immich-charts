@@ -38,14 +38,14 @@ jobs:
       - name: Lint with example values
         run: helm lint charts/immich -f charts/immich/examples/${{ matrix.example }}.yaml
 
-      - name: Create manifest from PR head
+      - name: Create manifest from PR head (new chart + new example)
         run: |
           mkdir -p charts/immich/build
           helm template immich charts/immich \
             -f charts/immich/examples/${{ matrix.example }}.yaml \
             | tee charts/immich/build/manifest-${{ matrix.example }}.yaml
 
-      - name: Checkout main
+      - name: Checkout main branch
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
         with:
           fetch-depth: 0
@@ -55,9 +55,11 @@ jobs:
       - name: Install chart dependencies (main)
         run: helm dependency build main/charts/immich
 
-      - name: Create manifest from main
+      - name: Create manifest from main (old chart + old example)
         run: |
           mkdir -p main/charts/immich/build
+          # Use the example from main branch with the chart from main
+          # This shows what changes when both chart AND example are updated
           if [ -f main/charts/immich/examples/${{ matrix.example }}.yaml ]; then
             helm template immich main/charts/immich \
               -f main/charts/immich/examples/${{ matrix.example }}.yaml \
@@ -77,10 +79,11 @@ jobs:
           comment-header: '## 📋 Example: `${{ matrix.example }}.yaml`'
           comment-footer: |
             <details>
-            <summary>📖 About this example</summary>
+            <summary>📖 About this diff</summary>
 
-            This diff shows changes to the `${{ matrix.example }}` example configuration.
+            This diff shows **all changes** (both chart and example) for [`${{ matrix.example }}.yaml`](../blob/${{ github.event.pull_request.head.sha }}/charts/immich/examples/${{ matrix.example }}.yaml).
 
-            - **Example file**: [`charts/immich/examples/${{ matrix.example }}.yaml`](../blob/${{ github.event.pull_request.head.sha }}/charts/immich/examples/${{ matrix.example }}.yaml)
+            - **Base**: main branch chart + main branch example
+            - **Head**: PR branch chart + PR branch example
             - **Test job**: [View logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             </details>
