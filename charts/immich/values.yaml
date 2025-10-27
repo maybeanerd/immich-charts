@@ -73,7 +73,7 @@ persistence:
     type: persistentVolumeClaim
     # existingClaim: "name-of-existing-claim"
     storageClass: null
-    accessMode: ReadWriteMany
+    accessMode: ReadWriteOnce
     size: 10Gi
     advancedMounts:
       server:
@@ -83,7 +83,7 @@ persistence:
     type: persistentVolumeClaim
     # existingClaim: "name-of-existing-claim"
     storageClass: null
-    accessMode: ReadWriteMany
+    accessMode: ReadWriteOnce
     size: 10Gi
     advancedMounts:
       server:
@@ -96,7 +96,7 @@ persistence:
     # type: emptyDir
     # existingClaim: "name-of-existing-claim"
     storageClass: null
-    accessMode: ReadWriteMany
+    accessMode: ReadWriteOnce
     size: 10Gi
     advancedMounts:
       machine-learning:
