@@ -6,7 +6,10 @@ metadata:
   name: {{ .Release.Name }}-test-postgresql
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "bjw-s.common.lib.metadata.allLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: test
   annotations:
     "helm.sh/hook": test
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
@@ -36,7 +39,10 @@ metadata:
   name: {{ .Release.Name }}-test-redis
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "bjw-s.common.lib.metadata.allLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: test
   annotations:
     "helm.sh/hook": test
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
@@ -61,7 +67,10 @@ metadata:
   name: {{ .Release.Name }}-test-server
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "bjw-s.common.lib.metadata.allLabels" . | nindent 4 }}
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: test
   annotations:
     "helm.sh/hook": test
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
