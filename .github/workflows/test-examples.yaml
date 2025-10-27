@@ -55,17 +55,17 @@ jobs:
       - name: Install chart dependencies (main)
         run: helm dependency build main/charts/immich
 
-      - name: Create manifest from main (old chart + old example)
+      - name: Create manifest from main (old chart + new example)
         run: |
           mkdir -p main/charts/immich/build
-          # Use the example from main branch with the chart from main
-          # This shows what changes when both chart AND example are updated
-          if [ -f main/charts/immich/examples/${{ matrix.example }}.yaml ]; then
+          # Use the example from PR branch (new) with the chart from main (old)
+          # This isolates CHART changes by using the same example for both
+          if [ -f charts/immich/examples/${{ matrix.example }}.yaml ]; then
             helm template immich main/charts/immich \
-              -f main/charts/immich/examples/${{ matrix.example }}.yaml \
+              -f charts/immich/examples/${{ matrix.example }}.yaml \
               | tee main/charts/immich/build/manifest-${{ matrix.example }}.yaml
           else
-            echo "Example does not exist in main branch, skipping diff"
+            echo "Example does not exist in PR branch, skipping diff"
             mkdir -p main/charts/immich/build
             touch main/charts/immich/build/manifest-${{ matrix.example }}.yaml
           fi
@@ -81,9 +81,9 @@ jobs:
             <details>
             <summary>📖 About this diff</summary>
 
-            This diff shows **all changes** (both chart and example) for [`${{ matrix.example }}.yaml`](../blob/${{ github.event.pull_request.head.sha }}/charts/immich/examples/${{ matrix.example }}.yaml).
+            This diff shows **chart changes** when rendered with the **current** [`${{ matrix.example }}.yaml`](../blob/${{ github.event.pull_request.head.sha }}/charts/immich/examples/${{ matrix.example }}.yaml) example.
 
-            - **Base**: main branch chart + main branch example
-            - **Head**: PR branch chart + PR branch example
+            - **Base**: main branch chart + PR example config
+            - **Head**: PR branch chart + PR example config
             - **Test job**: [View logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             </details>
