@@ -69,7 +69,7 @@ We provide tested examples for common deployment scenarios:
 
 - **[minimal.yaml](charts/immich/examples/minimal.yaml)** - Basic setup with bundled PostgreSQL and Redis (best for getting started)
 - **[minimal-external.yaml](charts/immich/examples/minimal-external.yaml)** - Minimal deployment using external services (PostgreSQL, Redis) with ML disabled
-- **[full-features.yaml](charts/immich/examples/full-features.yaml)** - Advanced configuration showcasing all optional features (SSD optimization, custom config, secrets, ingress, replicas, resource limits)
+- **[full-features.yaml](charts/immich/examples/full-features.yaml)** - Advanced configuration showcasing most optional features (SSD optimization, custom config, secrets, ingress, pod affinity, resource limits)
 
 Deploy an example:
 ```bash
