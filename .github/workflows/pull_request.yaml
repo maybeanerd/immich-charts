@@ -163,14 +163,62 @@ jobs:
       - name: Debug on failure
         if: failure()
         run: |
+          echo "╔════════════════════════════════════════════════════════╗"
+          echo "║                 DEPLOYMENT DEBUG INFO                  ║"
+          echo "╚════════════════════════════════════════════════════════╝"
+          echo ""
+
           echo "=== Pod Status ==="
           kubectl get pods -n immich -o wide
+          echo ""
+
+          echo "=== PersistentVolumeClaims ==="
+          kubectl get pvc -n immich
+          echo ""
+
+          echo "=== PersistentVolumes ==="
+          kubectl get pv
+          echo ""
+
+          echo "=== StorageClasses ==="
+          kubectl get storageclass
+          echo ""
+
+          echo "=== Services ==="
+          kubectl get svc -n immich
+          echo ""
+
+          echo "=== Deployments ==="
+          kubectl get deployments -n immich
+          echo ""
+
+          echo "=== StatefulSets ==="
+          kubectl get statefulsets -n immich
+          echo ""
+
+          echo "=== ConfigMaps ==="
+          kubectl get configmaps -n immich
+          echo ""
+
+          echo "=== Secrets ==="
+          kubectl get secrets -n immich
+          echo ""
+
+          echo "=== Events (sorted by time) ==="
+          kubectl get events -n immich --sort-by='.lastTimestamp'
+          echo ""
 
           echo "=== Pod Descriptions ==="
           kubectl describe pods -n immich
+          echo ""
 
-          echo "=== Events ==="
-          kubectl get events -n immich --sort-by='.lastTimestamp'
+          echo "=== PVC Descriptions ==="
+          kubectl describe pvc -n immich
+          echo ""
 
-          echo "=== Logs from all containers ==="
-          kubectl logs -n immich -l app.kubernetes.io/instance=immich --all-containers=true --tail=100 || true
+          echo "=== Container Logs (last 100 lines) ==="
+          for pod in $(kubectl get pods -n immich -o name); do
+            echo "--- Logs from $pod ---"
+            kubectl logs -n immich $pod --all-containers=true --tail=100 || echo "Failed to get logs from $pod"
+            echo ""
+          done
