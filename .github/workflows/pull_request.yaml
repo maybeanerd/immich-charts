@@ -142,7 +142,7 @@ jobs:
             --create-namespace \
             -f charts/immich/examples/minimal.yaml \
             --wait \
-            --timeout 15m
+            --timeout 5m
 
       - name: Verify deployment
         run: |
