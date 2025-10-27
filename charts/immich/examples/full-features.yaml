@@ -102,7 +102,7 @@ postgresql:
     persistence:
       storageClass: 'my-ssd-storage-class'
       accessMode: ReadWriteMany
-      size: 200Gi
+      size: 100Gi
     resources:
       requests:
         cpu: '500m'

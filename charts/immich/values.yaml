@@ -74,7 +74,7 @@ persistence:
     # existingClaim: "name-of-existing-claim"
     storageClass: null
     accessMode: ReadWriteOnce
-    size: 10Gi
+    size: 100Gi
     advancedMounts:
       server:
         main:
@@ -170,7 +170,7 @@ postgresql:
     persistence:
       enabled: true
       accessMode: ReadWriteOnce
-      size: 100Gi
+      size: 20Gi
       storageClass: null
     resources:
       requests:
