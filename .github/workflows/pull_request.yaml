@@ -160,6 +160,24 @@ jobs:
           echo "Checking for errors in logs:"
           kubectl logs -n immich -l app.kubernetes.io/instance=immich --tail=50 --all-containers=true || true
 
+      - name: Run Helm tests
+        run: |
+          echo "╔════════════════════════════════════════════════════════╗"
+          echo "║            RUNNING HELM INTEGRATION TESTS              ║"
+          echo "╚════════════════════════════════════════════════════════╝"
+          echo ""
+
+          # Run Helm tests (connection tests for PostgreSQL, Redis, and Immich server)
+          helm test immich --namespace immich --logs || {
+            echo "Helm tests failed!"
+            echo "Showing test pod status..."
+            kubectl get pods -n immich -l 'helm.sh/hook=test'
+            exit 1
+          }
+
+          echo ""
+          echo "✅ All integration tests passed!"
+
       - name: Debug on failure
         if: failure()
         run: |
