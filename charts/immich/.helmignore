@@ -26,5 +26,5 @@ OWNERS
 # helm-docs templates
 *.gotmpl
 
-# helm unit tests
-tests/
+# helm unit tests (exclude root tests/ but not templates/tests/)
+/tests/
