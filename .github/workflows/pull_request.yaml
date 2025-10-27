@@ -67,25 +67,9 @@ jobs:
       - name: Create manifest from PR head (new chart + new example)
         run: |
           mkdir -p charts/immich/build
-
-          # Generate manifest
           helm template immich charts/immich \
             -f charts/immich/examples/${{ matrix.example }}.yaml \
-            > charts/immich/build/raw-${{ matrix.example }}.yaml
-
-          # Sort resources for consistent ordering
-          # Split manifest into individual resources, sort them alphabetically, then recombine
-          cd charts/immich/build
-          mkdir -p split-${{ matrix.example }}
-          awk '/^---/{x="split-${{ matrix.example }}/F"++i".yaml";next}{print > x}' raw-${{ matrix.example }}.yaml
-          find split-${{ matrix.example }}/ -name "*.yaml" -exec sh -c 'cat {}' \; | LC_ALL=C sort > manifest-${{ matrix.example }}.yaml.tmp
-          # Reconstruct with --- separators
-          awk '{print} /^---/{print ""}' manifest-${{ matrix.example }}.yaml.tmp > manifest-${{ matrix.example }}.yaml || mv manifest-${{ matrix.example }}.yaml.tmp manifest-${{ matrix.example }}.yaml
-          # Cleanup
-          rm -rf split-${{ matrix.example }} manifest-${{ matrix.example }}.yaml.tmp
-
-          # Cleanup intermediate files
-          rm -f charts/immich/build/raw-${{ matrix.example }}.yaml
+            | tee charts/immich/build/manifest-${{ matrix.example }}.yaml
 
       - name: Checkout main branch
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
@@ -103,24 +87,9 @@ jobs:
           # Use the example from PR branch (new) with the chart from main (old)
           # This isolates CHART changes by using the same example for both
           if [ -f charts/immich/examples/${{ matrix.example }}.yaml ]; then
-            # Generate manifest
             helm template immich main/charts/immich \
               -f charts/immich/examples/${{ matrix.example }}.yaml \
-              > main/charts/immich/build/raw-${{ matrix.example }}.yaml
-            
-            # Sort resources for consistent ordering
-            # Split manifest into individual resources, sort them alphabetically, then recombine
-            cd main/charts/immich/build
-            mkdir -p split-${{ matrix.example }}
-            awk '/^---/{x="split-${{ matrix.example }}/F"++i".yaml";next}{print > x}' raw-${{ matrix.example }}.yaml
-            find split-${{ matrix.example }}/ -name "*.yaml" -exec sh -c 'cat {}' \; | LC_ALL=C sort > manifest-${{ matrix.example }}.yaml.tmp
-            # Reconstruct with --- separators
-            awk '{print} /^---/{print ""}' manifest-${{ matrix.example }}.yaml.tmp > manifest-${{ matrix.example }}.yaml || mv manifest-${{ matrix.example }}.yaml.tmp manifest-${{ matrix.example }}.yaml
-            # Cleanup
-            rm -rf split-${{ matrix.example }} manifest-${{ matrix.example }}.yaml.tmp
-            
-            # Cleanup intermediate files
-            rm -f main/charts/immich/build/raw-${{ matrix.example }}.yaml
+              | tee main/charts/immich/build/manifest-${{ matrix.example }}.yaml
           else
             echo "Example does not exist in PR branch, skipping diff"
             mkdir -p main/charts/immich/build
@@ -142,7 +111,6 @@ jobs:
 
             - **Base**: main branch chart + PR example config
             - **Head**: PR branch chart + PR example config
-            - **Resources**: Sorted alphabetically for consistent comparison
             - **Test job**: [View logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             </details>
 
