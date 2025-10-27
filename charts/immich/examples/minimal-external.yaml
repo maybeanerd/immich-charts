@@ -1,0 +1,37 @@
+# Minimal Services Example
+# This example demonstrates the smallest possible deployment:
+# - Use external PostgreSQL and Redis (no bundled services)
+# - Machine Learning disabled
+
+# Immich configuration
+immich:
+  ## Disable machine learning
+  machineLearning:
+    enabled: false
+
+  ## Configure external services
+
+  ## External PostgreSQL connection
+  database:
+    host: 'postgres.prod.example.com'
+    port: 5432
+    username: 'immich_prod'
+    name: 'immich_production'
+    ### Reference secret for password
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: immich-external-db-secret
+          key: db-password
+
+  ## External Redis connection
+  redis:
+    host: 'redis.prod.example.com'
+    port: 6379
+
+# Disable bundled services
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false

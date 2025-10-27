@@ -1,0 +1,108 @@
+# Full Features Example
+# This example demonstrates advanced configuration with most optional features:
+# - Bundled PostgreSQL with SSD optimization and custom env vars
+# - Kubernetes secret for password management
+# - Custom Immich application configuration
+# - Resource limits
+# - Ingress enabled
+# - Pod Affinities
+# - Adjusted storage sizes
+
+# Immich configuration
+immich:
+  ## SSD-optimized PostgreSQL
+  database:
+    storageType: ssd
+
+  ## Custom application configuration
+  configuration:
+    trash:
+      enabled: true
+      days: 30
+    storageTemplate:
+      enabled: true
+      template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}'
+    image:
+      thumbnail:
+        quality: 85
+        colorspace: p3
+    server:
+      externalDomain: 'immich.yourdomain.com'
+      loginPageMessage: 'Welcome to Immich - Full Features Demo'
+    newVersionCheck:
+      enabled: false
+
+# Common chart configuration
+
+## Enable ingress
+ingress:
+  server:
+    enabled: true
+    className: 'my-ingress-class'
+    hosts:
+      - host: immich.yourdomain.com
+        paths:
+          - path: /
+            pathType: Prefix
+
+## Adjusted storage sizes
+persistence:
+  library:
+    storageClass: 'my-storage-class'
+    accessMode: ReadWriteMany
+    size: 1Ti
+  external:
+    storageClass: 'my-storage-class'
+    accessMode: ReadWriteMany
+    size: 500Gi
+  machine-learning-cache:
+    storageClass: 'my-storage-class'
+    accessMode: ReadWriteMany
+    size: 50Gi
+
+## Resource limits
+controllers:
+  server:
+    resources:
+      requests:
+        cpu: '500m'
+        memory: 2Gi
+      limits:
+        cpu: '2000m'
+        memory: 4Gi
+
+## Pod Affinities
+defaultPodOptions:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: kubernetes.io/role
+                operator: In
+                values:
+                  - worker
+
+# PostgreSQL highly customized
+postgresql:
+  auth:
+    ## Use existing secret for password
+    existingSecret: immich-postgresql-secret
+  primary:
+    ## Custom environment variables (merged with chart defaults)
+    env:
+      POSTGRESQL_STARTUP_TIMEOUT: '512' # Override default
+      ## Add your own custom env vars here
+      MY_AMAZING_ENV_VAR: 'IS_GREAT'
+    persistence:
+      storageClass: 'my-ssd-storage-class'
+      accessMode: ReadWriteMany
+      size: 200Gi
+    resources:
+      requests:
+        cpu: '500m'
+        memory: 2Gi
+      limits:
+        cpu: '2000m'
+        memory: 4Gi

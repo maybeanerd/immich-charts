@@ -4,19 +4,3 @@
 postgresql:
   auth:
     password: CHANGE-ME-TO-A-SECURE-PASSWORD
-  primary:
-    persistence:
-      storageClass: null # Change to your storage class unless you want to use you default provider
-      size: 50Gi
-
-# Required: Set storage classes for your cluster
-persistence:
-  library:
-    storageClass: null # Change to your storage class unless you want to use you default provider
-    size: 100Gi
-  external:
-    storageClass: null # Change to your storage class unless you want to use you default provider
-    size: 50Gi
-  machine-learning-cache:
-    storageClass: null # Change to your storage class unless you want to use you default provider
-    size: 10Gi

@@ -67,12 +67,9 @@ Common customizations based on your deployment needs:
 
 We provide tested examples for common deployment scenarios:
 
-- **[minimal.yaml](charts/immich/examples/minimal.yaml)** - Basic setup with bundled PostgreSQL and Redis
-- **[bundled-with-secret.yaml](charts/immich/examples/bundled-with-secret.yaml)** - Bundled PostgreSQL using Kubernetes secrets for password management
-- **[ssd-optimized.yaml](charts/immich/examples/ssd-optimized.yaml)** - PostgreSQL optimized for SSD storage
-- **[external-services.yaml](charts/immich/examples/external-services.yaml)** - Using external PostgreSQL and Redis with secret references
-- **[ml-disabled.yaml](charts/immich/examples/ml-disabled.yaml)** - Deployment without machine learning features
-- **[custom-config.yaml](charts/immich/examples/custom-config.yaml)** - Custom Immich application configuration
+- **[minimal.yaml](charts/immich/examples/minimal.yaml)** - Basic setup with bundled PostgreSQL and Redis (best for getting started)
+- **[minimal-external.yaml](charts/immich/examples/minimal-external.yaml)** - Minimal deployment using external services (PostgreSQL, Redis) with ML disabled
+- **[full-features.yaml](charts/immich/examples/full-features.yaml)** - Advanced configuration showcasing all optional features (SSD optimization, custom config, secrets, ingress, replicas, resource limits)
 
 Deploy an example:
 ```bash
