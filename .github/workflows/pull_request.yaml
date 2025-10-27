@@ -154,8 +154,8 @@ jobs:
           echo "Final pod status:"
           kubectl get pods -n immich -o wide
 
-          echo "Checking for errors in logs:"
-          kubectl logs -n immich -l app.kubernetes.io/instance=immich --tail=50 --all-containers=true || true
+          echo "Checking for error-level logs:"
+          kubectl logs -n immich -l app.kubernetes.io/instance=immich --tail=200 --all-containers=true | grep -i '\berror\b' || true
 
       - name: Run Helm tests
         run: |
