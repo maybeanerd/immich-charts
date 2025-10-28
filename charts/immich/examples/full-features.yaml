@@ -10,16 +10,9 @@
 
 # Immich configuration
 immich:
+  ## SSD-optimized PostgreSQL
   database:
-    ## SSD-optimized PostgreSQL
     storageType: ssd
-
-    ## Use existing secret for password
-    password:
-      valueFrom:
-        secretKeyRef:
-          name: immich-postgresql-secret
-          key: password
 
   ## Enable monitoring
   monitoring:
@@ -97,6 +90,9 @@ defaultPodOptions:
 
 # PostgreSQL highly customized
 postgresql:
+  auth:
+    ## Use existing secret for password
+    existingSecret: immich-postgresql-secret
   primary:
     ## Custom environment variables (merged with chart defaults)
     env:
