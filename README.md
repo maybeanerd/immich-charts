@@ -26,6 +26,10 @@ helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
 
 **Important**: Do not copy the full `values.yaml` from this repository. Only set the values you want to override.
 
+### Upgrading
+
+When upgrading between versions, please review the [Upgrade Guide](UPGRADE.md) for breaking changes and migration instructions.
+
 ## Configuration Guide
 
 ### What You MUST Configure
