@@ -20,21 +20,53 @@ immich:
 
   ## Custom application configuration
   configuration:
-    trash:
+    image:
+      preview:
+        format: webp
+      fullsize:
+        enabled: true
+        format: webp
+        quality: 80
+    library:
+      scan:
+        cronExpression: '0 4 * * *'
+    metadata:
+      faces:
+        import: true
+    nightlyTasks:
+      clusterNewFaces: true
+      databaseCleanup: true
+      generateMemories: true
+      missingThumbnails: true
+      startTime: '03:00'
+      syncQuotaUsage: true
+    notifications:
+      smtp:
+        enabled: true
+        from: 'Immich <noreply@example.com>'
+        replyTo: ''
+        transport:
+          host: 'smtp.example.com'
+          ignoreCert: false
+          password: 'TODOCHANGEME'
+          port: 587
+          username: 'noreply@example.com'
+    oauth:
       enabled: true
-      days: 30
+      autoLaunch: true
+      autoRegister: true
+      buttonText: 'Login with Authentik'
+      clientId: 'XYZ-CLIENT-ID'
+      defaultStorageQuota: 50
+      issuerUrl: 'https://auth.example.com/application/o/immich/'
+      timeout: 30000
+    passwordLogin:
+      enabled: false
+    server:
+      externalDomain: 'https://immich.example.com'
+      loginPageMessage: ''
     storageTemplate:
       enabled: true
-      template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}'
-    image:
-      thumbnail:
-        quality: 85
-        colorspace: p3
-    server:
-      externalDomain: 'immich.yourdomain.com'
-      loginPageMessage: 'Welcome to Immich - Full Features Demo'
-    newVersionCheck:
-      enabled: false
 
 # Common chart configuration
 
@@ -42,9 +74,9 @@ immich:
 ingress:
   server:
     enabled: true
-    className: 'my-ingress-class'
+    className: 'example-ingress-class'
     hosts:
-      - host: immich.yourdomain.com
+      - host: immich.example.com
         paths:
           - path: /
             pathType: Prefix
@@ -52,15 +84,15 @@ ingress:
 ## Adjusted storage sizes
 persistence:
   library:
-    storageClass: 'my-storage-class'
+    storageClass: 'example-storage-class'
     accessMode: ReadWriteMany
     size: 1Ti
   external:
-    storageClass: 'my-storage-class'
+    storageClass: 'example-storage-class'
     accessMode: ReadWriteMany
     size: 500Gi
   machine-learning-cache:
-    storageClass: 'my-storage-class'
+    storageClass: 'example-storage-class'
     accessMode: ReadWriteMany
     size: 50Gi
 
@@ -100,7 +132,7 @@ postgresql:
       ## Add your own custom env vars here
       MY_AMAZING_ENV_VAR: 'IS_GREAT'
     persistence:
-      storageClass: 'my-ssd-storage-class'
+      storageClass: 'example-ssd-storage-class'
       accessMode: ReadWriteMany
       size: 100Gi
     resources:

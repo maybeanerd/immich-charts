@@ -21,14 +21,22 @@ immich:
   # Set specific values to override defaults with declarative configuration (for GitOps).
   # Any Object { key: value } is merged with Immich's internal defaults.
   configuration: {}
-  # Example chart-managed configuration:
+  # Example chart-managed configuration, a more detailed example is in the full-features.yaml example:
   # configuration:
   #   trash:
-  #     enabled: false
-  #     days: 30
-  #   storageTemplate:
   #     enabled: true
-  #     template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+  #     days: 30
+  #   notifications:
+  #     smtp:
+  #       enabled: true
+  #       from: 'Immich <noreply@example.com>'
+  #       replyTo: ''
+  #       transport:
+  #         host: 'smtp.example.com'
+  #         ignoreCert: false
+  #         password: 'TODOCHANGEME'
+  #         port: 587
+  #         username: 'noreply@example.com'
 
   # Machine Learning configuration
   machineLearning:
