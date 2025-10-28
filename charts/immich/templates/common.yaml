@@ -48,8 +48,6 @@ DB_PASSWORD:
   {{- $dbPassword | toYaml | nindent 2 }}
 {{- else if $dbPassword }}
 DB_PASSWORD: {{ $dbPassword | quote }}
-{{- else }}
-DB_PASSWORD: ""
 {{- end }}
 REDIS_HOSTNAME: {{ $redisHostname | quote }}
 IMMICH_MACHINE_LEARNING_URL: {{ $mlUrl | quote }}
