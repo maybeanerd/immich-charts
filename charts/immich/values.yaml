@@ -19,7 +19,7 @@ immich:
   # Set to {} (empty) to use Immich's internal defaults (default, recommended for GitOps).
   # Set to null to manage configuration via the Immich web GUI.
   # Set specific values to override defaults with declarative configuration (for GitOps).
-  # Empty {} is merged with Immich's internal defaults.
+  # Any Object { key: value } is merged with Immich's internal defaults.
   configuration: {}
   # Example chart-managed configuration:
   # configuration:
@@ -29,6 +29,12 @@ immich:
   #   storageTemplate:
   #     enabled: true
   #     template: "{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}"
+
+  # Machine Learning configuration
+  machineLearning:
+    # Enable or disable the ML service
+    # Set to false to disable ML features (face detection, object recognition, etc.)
+    enabled: true
 
   # Monitoring configuration
   # Enable to expose Prometheus metrics endpoints and create ServiceMonitor
@@ -61,12 +67,6 @@ immich:
   #   host: "redis.example.com"
   #   port: 6379
 
-  # Machine Learning configuration
-  machineLearning:
-    # Enable or disable the ML service
-    # Set to false to disable ML features (face detection, object recognition, etc.)
-    enabled: true
-
 # Persistence configuration
 persistence:
   library:
@@ -90,7 +90,6 @@ persistence:
         main:
           - path: /usr/src/app/external
   machine-learning-cache:
-    enabled: true # Automatically disabled when immich.machineLearning.enabled is false
     type: persistentVolumeClaim
     # Optional: Set type to emptyDir to stop caching between pod restarts
     # type: emptyDir
@@ -120,7 +119,8 @@ ingress:
 # When disabled, configure connection details in immich.database / immich.redis above
 postgresql:
   enabled: true
-  # Use Immich's custom PostgreSQL image with vector extensions
+  # Internal image configuration - managed by the chart
+  # Users should not override this unless they know what they're doing
   image:
     registry: ghcr.io
     repository: immich-app/postgres
@@ -179,6 +179,7 @@ postgresql:
         memory: '2Gi'
     initdb:
       scripts:
+        # This should be unnecessary as we set the POSTGRES_DB env var, but for some reason sometimes the DB is not created
         01-create-db.sql: |
           DO $$
           BEGIN
