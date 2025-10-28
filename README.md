@@ -52,7 +52,6 @@ Common customizations based on your deployment needs:
 #### Resource Management
 - **Machine Learning** - Disable to save resources (`immich.machineLearning.enabled: false`)
 - **Resource Limits** - Set CPU/memory for workloads (`controllers.*.resources`)
-- **Replicas** - Scale the server component (`controllers.server.replicas`)
 
 #### External Services
 - **External Database** - Use managed PostgreSQL (`postgresql.enabled: false`, configure `immich.database.*`)
