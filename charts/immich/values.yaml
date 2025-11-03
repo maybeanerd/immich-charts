@@ -154,7 +154,7 @@ postgresql:
       auth:
         username: immich
         database: immich
-        # Password set dynamically via template merge (see templates/postgresql.yaml)
+        # Password is already set above in postgresql.auth.password
     security:
       allowInsecureImages: true
   primary:
