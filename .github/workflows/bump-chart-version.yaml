@@ -1,0 +1,80 @@
+name: Bump Chart Version on Renovate
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/immich/values.yaml'
+
+jobs:
+  check-and-bump:
+    # Only run on immich image updates
+    # Renovate doesn't auto-bump chart version for Docker image updates in values.yaml
+    if: contains(github.event.head_commit.message, 'update ghcr.io/immich-app/immich')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        with:
+          fetch-depth: 2  # Need at least 2 commits to compare
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Check if version needs bumping
+        id: check_version
+        run: |
+          # Get the chart version from current HEAD
+          current_version=$(yq '.version' charts/immich/Chart.yaml)
+          
+          # Get the chart version from previous commit
+          previous_version=$(git show HEAD~1:charts/immich/Chart.yaml | yq '.version')
+          
+          echo "Current version: $current_version"
+          echo "Previous version: $previous_version"
+          
+          if [[ "$current_version" != "$previous_version" ]]; then
+            echo "✅ Version was already bumped in this commit (${previous_version} → ${current_version})"
+            echo "should_bump=false" >> $GITHUB_OUTPUT
+          else
+            echo "📦 Version unchanged, will bump from ${current_version}"
+            echo "should_bump=true" >> $GITHUB_OUTPUT
+            echo "current_version=$current_version" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump chart version
+        if: steps.check_version.outputs.should_bump == 'true'
+        id: bump
+        run: |
+          current_version="${{ steps.check_version.outputs.current_version }}"
+          
+          # Parse version into major, minor, patch
+          IFS='.' read -r major minor patch <<< "$current_version"
+          
+          # Increment patch version
+          new_patch=$((patch + 1))
+          new_version="${major}.${minor}.${new_patch}"
+          
+          echo "Bumping version: ${current_version} → ${new_version}"
+          
+          # Update Chart.yaml
+          yq -i ".version = \"$new_version\"" charts/immich/Chart.yaml
+          
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Commit and push version bump
+        if: steps.check_version.outputs.should_bump == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add charts/immich/Chart.yaml
+          git commit -m "chore: bump chart version to ${{ steps.bump.outputs.new_version }} [skip ci]"
+          git push
+
