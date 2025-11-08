@@ -10,6 +10,42 @@ entries:
             - name: Release Notes
               url: https://github.com/maybeanerd/immich-charts/releases
     apiVersion: v2
+    created: "2025-11-08T08:39:36.400409812Z"
+    dependencies:
+    - name: common
+      repository: https://bjw-s-labs.github.io/helm-charts
+      version: 4.4.0
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 18.1.7
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 23.2.12
+    description: A chart to power Immich (immich.app) running on kubernetes
+    digest: 390e03a7d6b1b01d1d02297aa16f09be78402e8c9dba79f6a35137f0f900245d
+    home: https://immich.app/
+    icon: https://raw.githubusercontent.com/immich-app/immich/main/design/immich-logo.svg
+    maintainers:
+    - email: sebastian@diluz.io
+      name: sebastian
+    name: immich
+    sources:
+    - https://github.com/maybeanerd/immich-charts/tree/main/charts/immich
+    - https://github.com/immich-app/immich
+    urls:
+    - https://github.com/maybeanerd/immich-charts/releases/download/0.11.14/immich-0.11.14.tgz
+    version: 0.11.14
+  - annotations:
+      artifacthub.io/category: storage
+      artifacthub.io/changes: |-
+        - kind: changed
+          description: Check the Release Notes on GitHub
+          links:
+            - name: Release Notes
+              url: https://github.com/maybeanerd/immich-charts/releases
+    apiVersion: v2
     created: "2025-11-08T04:35:03.095244623Z"
     dependencies:
     - name: common
@@ -3170,4 +3206,4 @@ entries:
     urls:
     - https://github.com/immich-app/immich-charts/releases/download/immich-0.0.4/immich-0.0.4.tgz
     version: 0.0.4
-generated: "2025-11-08T04:35:03.095493248Z"
+generated: "2025-11-08T08:39:36.400723145Z"
