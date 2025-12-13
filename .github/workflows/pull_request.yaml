@@ -15,7 +15,7 @@ jobs:
       image: alpine/helm:3.19.0
     steps:
       - name: Checkout PR head
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
 
@@ -46,7 +46,7 @@ jobs:
           - full-features
     steps:
       - name: Checkout PR head
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
 
@@ -70,7 +70,7 @@ jobs:
             | tee charts/immich/build/manifest-${{ matrix.example }}.yaml
 
       - name: Checkout main branch
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
           ref: main
@@ -120,7 +120,7 @@ jobs:
     needs: lint_and_test
     steps:
       - name: Checkout PR head
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
 
