@@ -77,6 +77,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
           git add charts/immich/Chart.yaml
-          git commit -m "chore: bump chart version to ${{ steps.bump.outputs.new_version }} [skip ci]"
+          git commit -m "chore: bump chart version to ${{ steps.bump.outputs.new_version }}"
           git push
 
