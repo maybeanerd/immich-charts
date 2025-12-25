@@ -5,10 +5,10 @@
   ],
   "packageRules": [
     {
-      "description": "Immich minor releases are unstable and could always be breaking",
-      "automerge": false,
+      "description": "Immich releases are stable since v2.0",
+      "automerge": true,
       "matchUpdateTypes": [
-        "major",
+        "patch",
         "minor"
       ],
       "matchPackageNames": [
@@ -19,6 +19,5 @@
   "bumpVersion": "patch",
   "minor": {
     "automerge": false
-  },
-  "forkProcessing": "enabled"
+  }
 }
