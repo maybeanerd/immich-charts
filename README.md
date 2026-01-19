@@ -37,6 +37,7 @@ When upgrading between versions, please review the [Upgrade Guide](UPGRADE.md) f
 Before deploying Immich, you **must** configure:
 
 **Database Password** - Set a secure password when using bundled PostgreSQL:
+
 - `immich.database.password` - Direct password value
 - Or use `immich.database.password.valueFrom.secretKeyRef` for existing secrets
 
@@ -47,6 +48,7 @@ Before deploying Immich, you **must** configure:
 Common customizations based on your deployment needs:
 
 #### Basic Configuration
+
 - **Storage Configuration**:
   - **Storage Classes** - Override default StorageClass if needed (`persistence.*.storageClass`, `postgresql.primary.persistence.storageClass`)
   - **Storage Sizes** - Adjust volume sizes based on your needs (`persistence.*.size`)
@@ -54,14 +56,17 @@ Common customizations based on your deployment needs:
 - **Ingress** - Optionally enable ingress for web access (`ingress.server.enabled: true`). Disabled by default - access via port-forward or LoadBalancer service
 
 #### Resource Management
+
 - **Machine Learning** - Disable to save resources (`immich.machineLearning.enabled: false`)
 - **Resource Limits** - Set CPU/memory for workloads (`controllers.*.resources`)
 
 #### External Services
+
 - **External Database** - Use managed PostgreSQL (`postgresql.enabled: false`, configure `immich.database.*`)
-- **External Redis** - Use managed Redis (`redis.enabled: false`, configure `immich.redis.*`)
+- **External Valkey** - Use managed Valkey (`valkey.enabled: false`, configure `immich.valkey.*`)
 
 #### Advanced Features
+
 - **Application Configuration** - Manage Immich settings via config file (`immich.configuration`)
 - **Monitoring** - Enable Prometheus metrics (`immich.monitoring.enabled`)
 - **GPU Acceleration** - Add GPU resources for ML (`controllers.machine-learning.resources.limits`)
@@ -70,11 +75,12 @@ Common customizations based on your deployment needs:
 
 We provide tested examples for common deployment scenarios:
 
-- **[minimal.yaml](charts/immich/examples/minimal.yaml)** - Basic setup with bundled PostgreSQL and Redis (best for getting started)
-- **[minimal-external.yaml](charts/immich/examples/minimal-external.yaml)** - Minimal deployment using external services (PostgreSQL, Redis) with ML disabled
+- **[minimal.yaml](charts/immich/examples/minimal.yaml)** - Basic setup with bundled PostgreSQL and Valkey (best for getting started)
+- **[minimal-external.yaml](charts/immich/examples/minimal-external.yaml)** - Minimal deployment using external services (PostgreSQL, Valkey) with ML disabled
 - **[full-features.yaml](charts/immich/examples/full-features.yaml)** - Advanced configuration showcasing most optional features (SSD optimization, custom config, secrets, ingress, pod affinity, resource limits)
 
 Deploy an example:
+
 ```bash
 helm install immich oci://ghcr.io/maybeanerd/immich-charts/immich \
   --namespace immich --create-namespace \
@@ -102,7 +108,7 @@ Set to `ssd` or `hdd` to optimize PostgreSQL for your storage:
 ```yaml
 immich:
   database:
-    storageType: ssd  # or 'hdd' (default)
+    storageType: ssd # or 'hdd' (default)
 ```
 
 This automatically configures PostgreSQL environment variables for optimal performance. See [ssd-optimized.yaml](charts/immich/examples/ssd-optimized.yaml) for a complete example.
@@ -111,8 +117,8 @@ This automatically configures PostgreSQL environment variables for optimal perfo
 
 To use external/managed services instead of bundled ones:
 
-1. Disable the bundled service: `postgresql.enabled: false` and/or `redis.enabled: false`
-2. Configure connection details under `immich.database.*` or `immich.redis.*`
+1. Disable the bundled service: `postgresql.enabled: false` and/or `valkey.enabled: false`
+2. Configure connection details under `immich.database.*` or `immich.valkey.*`
 
 See [external-services.yaml](charts/immich/examples/external-services.yaml) for a complete example.
 
@@ -136,19 +142,21 @@ The chart deploys two main controllers:
 - **server** - Main Immich API and web interface
 - **machine-learning** - ML service for face detection, object recognition, etc. (automatically disabled when `immich.machineLearning.enabled: false`)
 
-Configuration uses semantic objects (`immich.database`, `immich.redis`, etc.) that are automatically transformed into appropriate environment variables for all components.
+Configuration uses semantic objects (`immich.database`, `immich.valkey`, etc.) that are automatically transformed into appropriate environment variables for all components.
 
 ## Accessing Immich
 
 After installation, access Immich using one of these methods:
 
 **Port Forward** (for testing):
+
 ```bash
 kubectl port-forward -n immich svc/immich-server 2283:2283
 # Access at http://localhost:2283
 ```
 
 **LoadBalancer Service** (for production without ingress):
+
 ```yaml
 service:
   server:
@@ -156,6 +164,7 @@ service:
 ```
 
 **Ingress** (for production with domain):
+
 ```yaml
 ingress:
   server:
@@ -169,11 +178,13 @@ ingress:
 ## Uninstalling
 
 View installed releases:
+
 ```bash
 helm ls --namespace immich
 ```
 
 Uninstall the chart:
+
 ```bash
 helm delete --namespace immich immich
 ```

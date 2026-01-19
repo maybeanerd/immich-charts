@@ -166,7 +166,7 @@ jobs:
           echo "╚════════════════════════════════════════════════════════╝"
           echo ""
 
-          # Run Helm tests (connection tests for PostgreSQL, Redis, and Immich server)
+          # Run Helm tests (connection tests for PostgreSQL, Valkey, and Immich server)
           helm test immich --namespace immich --logs || {
             echo "Helm tests failed!"
             echo "Showing test pod status..."

@@ -28,15 +28,14 @@ spec:
             -U {{ .Values.postgresql.global.postgresql.auth.username }} \
             -d {{ .Values.postgresql.global.postgresql.auth.database }} \
             -c "SELECT version();"
-          
           echo "PostgreSQL connection successful!"
 {{- end }}
 ---
-{{- if .Values.redis.enabled }}
+{{- if .Values.valkey.enabled }}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: {{ .Release.Name }}-test-redis
+  name: {{ .Release.Name }}-test-valkey
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ .Chart.Name }}
@@ -49,16 +48,16 @@ metadata:
 spec:
   restartPolicy: Never
   containers:
-    - name: test-redis
-      image: redis:7-alpine
+    - name: test-valkey
+      image: valkey/valkey:9-alpine3.23
       command:
         - sh
         - -c
         - |
-          echo "Testing Redis connection..."
-          redis-cli -h {{ .Release.Name }}-redis-master ping
-          
-          echo "Redis connection successful!"
+          echo "Testing Valkey connection..."
+          valkey-cli -h {{ .Release.Name }}-valkey-master ping
+
+          echo "Valkey connection successful!"
 {{- end }}
 ---
 apiVersion: v1
@@ -84,10 +83,8 @@ spec:
         - -c
         - |
           echo "Testing Immich server health endpoint..."
-          
           # Wait a bit for server to be ready
           sleep 5
-          
           # Test the ping endpoint
           if curl -f -s http://{{ .Release.Name }}-server:2283/api/server/ping > /dev/null; then
             echo "✓ Immich server is responding"
@@ -96,4 +93,3 @@ spec:
             echo "✗ Immich server is not responding"
             exit 1
           fi
-

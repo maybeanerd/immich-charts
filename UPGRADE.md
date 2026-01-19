@@ -7,6 +7,7 @@ This document provides migration guides for upgrading between versions of the Im
 ## Quick Reference
 
 For the most current documentation and default values, refer to:
+
 - [values.yaml](charts/immich/values.yaml) - Complete default values with inline documentation
 - [Configuration Examples](charts/immich/examples/) - Working examples for common scenarios
 - [README.md](README.md) - General configuration guide
@@ -21,7 +22,6 @@ The detailed migration guide below will help ensure you don't miss any changes w
 
 Version 0.11.0 introduces significant restructuring of the values schema to provide a cleaner, more intuitive configuration interface. The chart now manages internal complexity automatically while exposing only user-relevant settings at the top level.
 
-
 ### Breaking Changes
 
 #### 1. New Top-Level Configuration Structure
@@ -29,6 +29,7 @@ Version 0.11.0 introduces significant restructuring of the values schema to prov
 The chart introduces a new `immich` section that consolidates all Immich-specific settings:
 
 **Old structure:**
+
 ```yaml
 controllers:
   server:
@@ -40,17 +41,18 @@ controllers:
 ```
 
 **New structure:**
+
 ```yaml
 immich:
   machineLearning:
     enabled: true
-  
+
   database:
     storageType: hdd
-  
+
   monitoring:
     enabled: false
-  
+
   redis: {}
 ```
 
@@ -61,6 +63,7 @@ immich:
 Machine Learning is now controlled via a top-level setting instead of controller configuration.
 
 **Migration:**
+
 ```yaml
 # OLD (no longer supported)
 controllers:
@@ -77,30 +80,31 @@ immich:
 
 **Storage sizes have changed:**
 
-| Volume | Old Default | New Default | Notes |
-|--------|-------------|-------------|-------|
-| `library` | 10Gi | **100Gi** | Increased for typical photo collections |
-| `external` | 10Gi | **10Gi** | No change |
-| `machine-learning-cache` | 10Gi | **10Gi** | No change |
-| PostgreSQL | 100Gi | **20Gi** | Reduced, as database is typically smaller |
+| Volume                   | Old Default | New Default | Notes                                     |
+| ------------------------ | ----------- | ----------- | ----------------------------------------- |
+| `library`                | 10Gi        | **100Gi**   | Increased for typical photo collections   |
+| `external`               | 10Gi        | **10Gi**    | No change                                 |
+| `machine-learning-cache` | 10Gi        | **10Gi**    | No change                                 |
+| PostgreSQL               | 100Gi       | **20Gi**    | Reduced, as database is typically smaller |
 
 **Access mode has changed:**
 
-| Volume | Old Default | New Default | Notes |
-|--------|-------------|-------------|-------|
+| Volume      | Old Default     | New Default         | Notes                                            |
+| ----------- | --------------- | ------------------- | ------------------------------------------------ |
 | All volumes | `ReadWriteMany` | **`ReadWriteOnce`** | Better compatibility with most storage providers |
 
 **Action required:** Review your storage requirements and explicitly set sizes if needed:
+
 ```yaml
 persistence:
   library:
-    size: 100Gi  # Now the default, but you may need more
-    accessMode: ReadWriteOnce  # Or ReadWriteMany if required
-  
+    size: 100Gi # Now the default, but you may need more
+    accessMode: ReadWriteOnce # Or ReadWriteMany if required
+
 postgresql:
   primary:
     persistence:
-      size: 20Gi  # Adjust based on your database size
+      size: 20Gi # Adjust based on your database size
 ```
 
 #### 4. PostgreSQL Configuration Restructure
@@ -110,6 +114,7 @@ postgresql:
 The PostgreSQL password is now set at `postgresql.auth.password` instead of `postgresql.global.postgresql.auth.password`.
 
 **Migration:**
+
 ```yaml
 # OLD
 postgresql:
@@ -130,33 +135,35 @@ postgresql:
 PostgreSQL environment variables are now managed via a ConfigMap.
 
 **Migration:**
+
 ```yaml
 # OLD
 postgresql:
   primary:
     extraEnvVars:
       - name: DB_STORAGE_TYPE
-        value: 'HDD'
+        value: "HDD"
       - name: POSTGRES_DB
         value: immich
 
 # NEW
 immich:
   database:
-    storageType: hdd  # Controls DB_STORAGE_TYPE automatically
-
+    storageType: hdd # Controls DB_STORAGE_TYPE automatically
 ```
 
-**Action required:** 
+**Action required:**
+
 - Move your password to `postgresql.auth.password`
 - Set database storage type at `immich.database.storageType` (options: `hdd` or `ssd`)
 - Remove custom `extraEnvVars` that are now managed automatically
 
-#### 5. External Database/Redis Configuration
+#### 5. External Database/Valkey Configuration
 
-External database and Redis configuration is now centralized under the `immich` section.
+External database and Valkey configuration is now centralized under the `immich` section.
 
 **Migration:**
+
 ```yaml
 # NEW: External database configuration
 immich:
@@ -173,27 +180,25 @@ immich:
     #       name: immich-db-secret
     #       key: password
 
-# NEW: External Redis configuration
+# NEW: External Valkey configuration
 immich:
-  redis:
-    host: "redis.example.com"
+  valkey:
+    host: "valkey.example.com"
     port: 6379
 
 # Don't forget to disable bundled services:
 postgresql:
   enabled: false
 
-redis:
+valkey:
   enabled: false
 ```
-
 
 ### Typically Non-Breaking Changes
 
 #### 1. PostgreSQL Superuser Disabled
 
 The PostgreSQL superuser (`postgres`) is now disabled by default to prevent ArgoCD drift. All operations run as the `immich` user, which has sufficient privileges.
-
 
 ### Migration Checklist
 
@@ -203,12 +208,12 @@ The PostgreSQL superuser (`postgres`) is now disabled by default to prevent Argo
 - [ ] Move database storage type to `immich.database.storageType`
 - [ ] Remove custom `controllers` configuration
 - [ ] Update Machine Learning enable/disable to use `immich.machineLearning.enabled`
-- [ ] If using external database/Redis, migrate configuration to `immich.database` / `immich.redis`
-
+- [ ] If using external database/Valkey, migrate configuration to `immich.database` / `immich.valkey`
 
 ### Example Migration
 
 **Before (0.10.x):**
+
 ```yaml
 immich:
   configuration: {}
@@ -230,27 +235,28 @@ postgresql:
   primary:
     extraEnvVars:
       - name: DB_STORAGE_TYPE
-        value: 'SSD'
+        value: "SSD"
     persistence:
       size: 100Gi
 ```
 
 **After (0.11.x):**
+
 ```yaml
 # image.tag is now managed internally, no need to set
 
 immich:
   configuration: {}
-  
+
   machineLearning:
     enabled: false
-  
+
   database:
     storageType: ssd
 
 persistence:
   library:
-    size: 10Gi  # To ensure the old default value is still applied
+    size: 10Gi # To ensure the old default value is still applied
     accessMode: ReadWriteMany # To ensure your volumes access doesn't change
 
 postgresql:
@@ -259,7 +265,7 @@ postgresql:
     password: "my-secret-password"
   primary:
     persistence:
-      size: 100Gi  # To ensure the old default value is still applied
+      size: 100Gi # To ensure the old default value is still applied
 ```
 
 ---
@@ -267,4 +273,3 @@ postgresql:
 ## Need Help?
 
 If you encounter issues during migration, open an issue on [GitHub](https://github.com/maybeanerd/immich-charts/issues).
-
