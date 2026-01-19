@@ -16,6 +16,20 @@ The detailed migration guide below will help ensure you don't miss any changes w
 
 ---
 
+## Version 0.12.0
+
+### Overview
+
+Version 0.12.0 introduces valkey as a drop in replacement for redis. Redis has an reputation lost in the last years and even the official immich helm chart has switched to valkey.
+
+### Breaking Changes
+
+The `redis` keyword is not available anymore. Instead you have to use `valkey`.
+
+```yaml
+
+```
+
 ## Version 0.11.0
 
 ### Overview
