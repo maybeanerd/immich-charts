@@ -23,10 +23,10 @@ These checks run before deployment to catch common misconfigurations
   {{- end }}
 {{- end }}
 
-{{- /* Check: External Redis requires host */}}
-{{- if not .Values.redis.enabled }}
-  {{- if not .Values.immich.redis.host }}
-    {{- fail "ERROR: External Redis host is required when 'redis.enabled' is false. Set 'immich.redis.host'." }}
+{{- /* Check: External Valkey requires host */}}
+{{- if not .Values.valkey.enabled }}
+  {{- if not .Values.immich.valkey.host }}
+    {{- fail "ERROR: External Valkey host is required when 'valkey.enabled' is false. Set 'immich.valkey.host'." }}
   {{- end }}
 {{- end }}
 
@@ -47,4 +47,3 @@ These checks run before deployment to catch common misconfigurations
     {{- end }}
   {{- end }}
 {{- end }}
-

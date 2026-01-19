@@ -69,10 +69,10 @@ immich:
     #       name: immich-db-secret
     #       key: password
 
-  # Redis configuration
-  # For external Redis, set redis.enabled: false and configure connection below
-  redis: {}
-  #   host: "redis.example.com"
+  # Valkey configuration
+  # For external Valkey, set valkey.enabled: false and configure connection below
+  valkey: {}
+  #   host: "valkey.example.com"
   #   port: 6379
 
 # Persistence configuration
@@ -122,9 +122,9 @@ ingress:
           - path: '/'
     tls: []
 
-# Dependencies - PostgreSQL and Redis
+# Dependencies - PostgreSQL and Valkey
 # Set enabled: false to use external services
-# When disabled, configure connection details in immich.database / immich.redis above
+# When disabled, configure connection details in immich.database / immich.valkey above
 postgresql:
   enabled: true
   # Internal image configuration - managed by the chart
@@ -205,14 +205,14 @@ postgresql:
     containerSecurityContext:
       readOnlyRootFilesystem: false
 
-redis:
+valkey:
   enabled: true
   # Use standalone architecture (single instance, no replicas)
   architecture: standalone
-  # Disable auth for internal Redis (auth is typically only needed for external Redis)
+  # Disable auth for internal Valkey (auth is typically only needed for external Valkey)
   auth:
     enabled: false
-  # Disable persistence for internal Redis (ephemeral cache is sufficient)
+  # Disable persistence for internal Valkey (ephemeral cache is sufficient)
   master:
     persistence:
       enabled: false
