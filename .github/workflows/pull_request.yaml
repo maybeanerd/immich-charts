@@ -70,6 +70,7 @@ jobs:
           helm template immich charts/immich \
             -f charts/immich/examples/${{ matrix.example }}.yaml \
             --skip-tests \
+            | ../../scripts/normalize-helm-manifest.sh \
             | tee charts/immich/build/manifest-${{ matrix.example }}.yaml
 
       - name: Checkout main branch
@@ -91,6 +92,7 @@ jobs:
             helm template immich main/charts/immich \
               -f charts/immich/examples/${{ matrix.example }}.yaml \
               --skip-tests \
+              | ../../scripts/normalize-helm-manifest.sh \
               | tee main/charts/immich/build/manifest-${{ matrix.example }}.yaml
           else
             echo "Example does not exist in PR branch, skipping diff"
