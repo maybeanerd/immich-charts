@@ -53,7 +53,7 @@ The chart `version` should follow [semver](https://semver.org/).
    ```
 
 4. From the `charts/immich` directory execute the following command.
-   This will install the dependencies listed in `Chart.yml` and deploy the current state of the helm chart found locally.
+   This will install the dependencies listed in `Chart.yaml` and deploy the current state of the helm chart found locally.
    If you want to test a branch, make sure to switch to the respective branch first.
 
    ```bash

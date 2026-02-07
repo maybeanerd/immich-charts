@@ -1,6 +1,6 @@
 suite: test immich configuration management
 templates:
-  - templates/immich-config.yml
+  - templates/immich-config.yaml
 
 tests:
   - it: should create ConfigMap when configuration is empty object (default)

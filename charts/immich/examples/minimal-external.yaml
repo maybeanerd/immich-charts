@@ -13,10 +13,10 @@ immich:
 
   ## External PostgreSQL connection
   database:
-    host: 'postgres.prod.example.com'
+    host: postgres.prod.example.com
     port: 5432
-    username: 'immich_prod'
-    name: 'immich_production'
+    username: immich_prod
+    name: immich_production
     ### Reference secret for password
     password:
       valueFrom:
@@ -26,7 +26,7 @@ immich:
 
   ## External Valkey connection
   valkey:
-    host: 'valkey.prod.example.com'
+    host: valkey.prod.example.com
     port: 6379
 
 # Disable bundled services
