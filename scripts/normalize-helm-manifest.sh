@@ -1,17 +1,44 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Ensure yq is installed
-if ! command -v yq &> /dev/null; then
-    apk add --no-cache yq
-fi
+# This script normalizes Helm output by sorting resources by Kind and Name.
+# It ensures that "Service/my-app" is always compared against "Service/my-app".
 
-# 1. eval-all: Loads all documents into memory
-# 2. select(.) : Removes null/empty documents
-# 3. sort_by(...) : Orders them by Kind and Name for a stable diff
-# 4. split_doc : Outputs them back as separate --- documents
-yq eval-all '
-  select(.) | 
-  sort_by(.kind + .metadata.name) | 
-  split_doc
-' -
+awk '
+  BEGIN { 
+    RS = "---\n"; 
+    ORS = "" 
+  }
+  {
+    # 1. Extract Kind
+    kind = "Unknown"
+    if (match($0, /kind:[[:space:]]+[A-Za-z0-9]+/)) {
+        kind = substr($0, RSTART + 5, RLENGTH - 5)
+        gsub(/[[:space:]]/, "", kind)
+    }
+
+    # 2. Extract Name
+    name = "Unknown"
+    if (match($0, /name:[[:space:]]+[A-Za-z0-9.-]+/)) {
+        name = substr($0, RSTART + 5, RLENGTH - 5)
+        gsub(/[[:space:]]/, "", name)
+    }
+
+    # 3. Create a sortable prefix: Kind:Name|||OriginalContent
+    if (length($0) > 0 && $0 ~ /[a-zA-Z0-9]/) {
+        print kind ":" name "|||" $0 "---END_BLOCK---"
+    }
+  }
+' | sort -V | awk '
+  BEGIN { 
+    RS = "---END_BLOCK---"; 
+    ORS = "" 
+  }
+  {
+    # Remove the sort key prefix and restore the YAML separator
+    sub(/^[^|]+\|\|\|/, "", $0)
+    if (length($0) > 0) {
+        print "---\n" $0
+    }
+  }
+'
