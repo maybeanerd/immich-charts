@@ -11,7 +11,7 @@ jobs:
     permissions: read-all
     runs-on: ubuntu-latest
     container:
-      image: alpine/helm:4.1.0
+      image: alpine/helm:4.1.1
     steps:
       - name: Checkout PR head
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint_and_test
     container:
-      image: alpine/helm:4.1.0
+      image: alpine/helm:4.1.1
     strategy:
       matrix:
         example:
