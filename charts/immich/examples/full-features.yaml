@@ -46,24 +46,24 @@ immich:
         from: 'Immich <noreply@example.com>'
         replyTo: ''
         transport:
-          host: 'smtp.example.com'
+          host: smtp.example.com
           ignoreCert: false
-          password: 'TODOCHANGEME'
+          password: TODOCHANGEME
           port: 587
-          username: 'noreply@example.com'
+          username: noreply@example.com
     oauth:
       enabled: true
       autoLaunch: true
       autoRegister: true
-      buttonText: 'Login with Authentik'
-      clientId: 'XYZ-CLIENT-ID'
+      buttonText: Login with Authentik
+      clientId: XYZ-CLIENT-ID
       defaultStorageQuota: 50
-      issuerUrl: 'https://auth.example.com/application/o/immich/'
+      issuerUrl: https://auth.example.com/application/o/immich/
       timeout: 30000
     passwordLogin:
       enabled: false
     server:
-      externalDomain: 'https://immich.example.com'
+      externalDomain: https://immich.example.com
       loginPageMessage: ''
     storageTemplate:
       enabled: true
@@ -74,25 +74,35 @@ immich:
 ingress:
   server:
     enabled: true
-    className: 'example-ingress-class'
+    className: example-ingress-class
     hosts:
       - host: immich.example.com
         paths:
           - path: /
             pathType: Prefix
 
+## Enable httpRoute
+route:
+  main:
+    enabled: true
+    parentRefs:
+      - name: your-gateway
+        namespace: your-gateway-namespace
+    hostnames:
+      - immich.yourdomain.com
+
 ## Adjusted storage sizes
 persistence:
   library:
-    storageClass: 'example-storage-class'
+    storageClass: example-storage-class
     accessMode: ReadWriteMany
     size: 1Ti
   external:
-    storageClass: 'example-storage-class'
+    storageClass: example-storage-class
     accessMode: ReadWriteMany
     size: 500Gi
   machine-learning-cache:
-    storageClass: 'example-storage-class'
+    storageClass: example-storage-class
     accessMode: ReadWriteMany
     size: 50Gi
 
@@ -101,10 +111,10 @@ controllers:
   server:
     resources:
       requests:
-        cpu: '500m'
+        cpu: 500m
         memory: 2Gi
       limits:
-        cpu: '2000m'
+        cpu: 2000m
         memory: 4Gi
 
 ## Pod Affinities
@@ -130,15 +140,15 @@ postgresql:
     env:
       POSTGRESQL_STARTUP_TIMEOUT: '512' # Override default
       ## Add your own custom env vars here
-      MY_AMAZING_ENV_VAR: 'IS_GREAT'
+      MY_AMAZING_ENV_VAR: IS_GREAT
     persistence:
-      storageClass: 'example-ssd-storage-class'
+      storageClass: example-ssd-storage-class
       accessMode: ReadWriteMany
       size: 100Gi
     resources:
       requests:
-        cpu: '500m'
+        cpu: 500m
         memory: 2Gi
       limits:
-        cpu: '2000m'
+        cpu: 2000m
         memory: 4Gi

@@ -54,6 +54,7 @@ Common customizations based on your deployment needs:
   - **Storage Sizes** - Adjust volume sizes based on your needs (`persistence.*.size`)
 - **Database Storage Type** - Optimize for SSD storage (`immich.database.storageType: ssd`)
 - **Ingress** - Optionally enable ingress for web access (`ingress.server.enabled: true`). Disabled by default - access via port-forward or LoadBalancer service
+- **HTTPRoute** - Optionally enable route for web access (`route.main.enabled: true`). Disabled by default - access via port-forward or LoadBalancer service
 
 #### Resource Management
 
@@ -77,7 +78,7 @@ We provide tested examples for common deployment scenarios:
 
 - **[minimal.yaml](charts/immich/examples/minimal.yaml)** - Basic setup with bundled PostgreSQL and Valkey (best for getting started)
 - **[minimal-external.yaml](charts/immich/examples/minimal-external.yaml)** - Minimal deployment using external services (PostgreSQL, Valkey) with ML disabled
-- **[full-features.yaml](charts/immich/examples/full-features.yaml)** - Advanced configuration showcasing most optional features (SSD optimization, custom config, secrets, ingress, pod affinity, resource limits)
+- **[full-features.yaml](charts/immich/examples/full-features.yaml)** - Advanced configuration showcasing most optional features (SSD optimization, custom config, secrets, ingress, httpRoute, pod affinity, resource limits)
 
 Deploy an example:
 
@@ -173,6 +174,21 @@ ingress:
       - host: immich.yourdomain.com
         paths:
           - path: /
+```
+
+**HttpRoute** (for production with domain):
+
+```yaml
+route:
+  main:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: your-gateway
+        namespace: gateway-namespace-if-different
+        sectionName: http
+    hostnames:
+      - immich.yourdomain.com
 ```
 
 ## Uninstalling

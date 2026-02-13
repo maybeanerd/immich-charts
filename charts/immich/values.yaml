@@ -32,11 +32,11 @@ immich:
   #       from: 'Immich <noreply@example.com>'
   #       replyTo: ''
   #       transport:
-  #         host: 'smtp.example.com'
+  #         host: smtp.example.com
   #         ignoreCert: false
-  #         password: 'TODOCHANGEME'
+  #         password: TODOCHANGEME
   #         port: 587
-  #         username: 'noreply@example.com'
+  #         username: noreply@example.com
   # updateStrategy of the deployment for the immich and ml controller
   controller:
     updateStrategy: RollingUpdate
@@ -60,11 +60,11 @@ immich:
 
     # External database connection (requires postgresql.enabled: false)
     # When using bundled PostgreSQL, set password at postgresql.auth.password instead
-    # host: "postgres.example.com"
+    # host: postgres.example.com
     # port: 5432
-    # username: "immich"
-    # name: "immich"
-    # password: "your-password"
+    # username: immich
+    # name: immich
+    # password: your-password
     # Or use secret reference:
     # password:
     #   valueFrom:
@@ -75,14 +75,14 @@ immich:
   # Valkey configuration
   # For external Valkey, set valkey.enabled: false and configure connection below
   valkey: {}
-  #   host: "valkey.example.com"
+  #   host: valkey.example.com
   #   port: 6379
 
 # Persistence configuration
 persistence:
   library:
     type: persistentVolumeClaim
-    # existingClaim: "name-of-existing-claim"
+    # existingClaim: name-of-existing-claim
     storageClass: null
     accessMode: ReadWriteOnce
     size: 100Gi
@@ -92,7 +92,7 @@ persistence:
           - path: /data
   external:
     type: persistentVolumeClaim
-    # existingClaim: "name-of-existing-claim"
+    # existingClaim: name-of-existing-claim
     storageClass: null
     accessMode: ReadWriteOnce
     size: 10Gi
@@ -104,7 +104,7 @@ persistence:
     type: persistentVolumeClaim
     # Optional: Set type to emptyDir to stop caching between pod restarts
     # type: emptyDir
-    # existingClaim: "name-of-existing-claim"
+    # existingClaim: name-of-existing-claim
     storageClass: null
     accessMode: ReadWriteOnce
     size: 10Gi
@@ -122,8 +122,23 @@ ingress:
     hosts:
       - host: immich.local
         paths:
-          - path: '/'
+          - path: /
     tls: []
+
+# Gateway API support (ensure that you have installed an api-gateway controller
+# and created a gateway-class and a gateway)
+route:
+  main:
+    enabled: false
+    kind: HTTPRoute
+    parentRefs:
+      - name: '' # your preinstalled gateway
+        namespace: '' # Optional, but highly recommended the gateway in your gateway ns
+        sectionName: http # Optional, if you want to a specific listener
+    hostnames:
+      - ''
+    # Optional: if you want to specify additional labels
+    labels: {}
 
 # Dependencies - PostgreSQL and Valkey
 # Set enabled: false to use external services
@@ -185,9 +200,9 @@ postgresql:
       storageClass: null
     resources:
       requests:
-        memory: '512Mi'
+        memory: 512Mi
       limits:
-        memory: '2Gi'
+        memory: 2Gi
     initdb:
       scripts:
         # This should be unnecessary as we set the POSTGRES_DB env var, but for some reason sometimes the DB is not created

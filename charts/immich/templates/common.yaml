@@ -103,7 +103,7 @@ controllers:
         env:
           {{- include "immich.common.env" . | nindent 10 }}
           {{- if .Values.immich.monitoring.enabled }}
-          IMMICH_TELEMETRY_INCLUDE: 'all'
+          IMMICH_TELEMETRY_INCLUDE: all
           {{- end }}
           {{- if not (eq (typeOf .Values.immich.configuration) "<nil>") }}
           IMMICH_CONFIG_FILE: /config/immich-config.yaml
@@ -252,6 +252,22 @@ ingress:
               port: http
     tls:
       {{- .Values.ingress.server.tls | toYaml | nindent 6 }}
+
+{{- if and .Values.route .Values.route.main (not .Values.route.main.rules) }}
+route:
+  main:
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+        backendRefs:
+          - group: ''
+            kind: Service
+            name: server
+            port: 2283
+            weight: 1
+{{- end }}
 {{- end -}}
 
 {{- /* Merge hardcodedValues which includes auto-disable logic */ -}}
