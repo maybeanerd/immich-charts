@@ -128,7 +128,7 @@ ingress:
 # Gateway API support (ensure that you have installed an api-gateway controller
 # and created a gateway-class and a gateway)
 route:
-  main:
+  server:
     enabled: false
     kind: HTTPRoute
     parentRefs:

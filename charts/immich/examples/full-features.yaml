@@ -83,7 +83,7 @@ ingress:
 
 ## Enable httpRoute
 route:
-  main:
+  server:
     enabled: true
     parentRefs:
       - name: your-gateway

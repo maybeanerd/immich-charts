@@ -253,9 +253,10 @@ ingress:
     tls:
       {{- .Values.ingress.server.tls | toYaml | nindent 6 }}
 
-{{- if and .Values.route .Values.route.main (not .Values.route.main.rules) }}
+{{- $serviceName := printf "%s-server" .Release.Name }}
+{{- if and .Values.route .Values.route.server (not .Values.route.server.rules) }}
 route:
-  main:
+  server:
     rules:
       - matches:
           - path:
@@ -264,11 +265,11 @@ route:
         backendRefs:
           - group: ''
             kind: Service
-            name: server
+            name: {{ $serviceName }}
             port: 2283
             weight: 1
+    {{- end }}
 {{- end }}
-{{- end -}}
 
 {{- /* Merge hardcodedValues which includes auto-disable logic */ -}}
 {{- $_ := mergeOverwrite .Values (include "immich.hardcodedValues" . | fromYaml) -}}
