@@ -150,7 +150,7 @@ postgresql:
   image:
     registry: ghcr.io
     repository: immich-app/postgres
-    tag: 14-vectorchord0.3.0-pgvectors0.3.0
+    tag: 17-vectorchord0.3.0-pgvectors0.3.0
   auth:
     # Disable postgres superuser to prevent ArgoCD drift from random postgres-password
     # Init scripts run as 'immich' user which has sufficient privileges
