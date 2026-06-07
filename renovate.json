@@ -17,8 +17,5 @@
       ]
     }
   ],
-  "bumpVersion": "patch",
-  "minor": {
-    "automerge": false
-  }
+  "bumpVersion": "patch"
 }
