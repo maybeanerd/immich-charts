@@ -3,6 +3,7 @@
   "extends": [
     "local>maybeanerd/renovate-config"
   ],
+  "dependencyDashboardApproval": false,
   "packageRules": [
     {
       "description": "Immich releases are stable since v2.0",
@@ -16,8 +17,5 @@
       ]
     }
   ],
-  "bumpVersion": "patch",
-  "minor": {
-    "automerge": false
-  }
+  "bumpVersion": "patch"
 }
