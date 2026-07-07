@@ -118,7 +118,7 @@ ingress:
   server:
     enabled: false
     annotations:
-      nginx.ingress.kubernetes.io/proxy-body-size: '0'
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
     hosts:
       - host: immich.local
         paths:
@@ -132,11 +132,11 @@ route:
     enabled: false
     kind: HTTPRoute
     parentRefs:
-      - name: '' # your preinstalled gateway
-        namespace: '' # Optional, but highly recommended the gateway in your gateway ns
+      - name: "" # your preinstalled gateway
+        namespace: "" # Optional, but highly recommended the gateway in your gateway ns
         sectionName: http # Optional, if you want to a specific listener
     hostnames:
-      - ''
+      - ""
     # Optional: if you want to specify additional labels
     labels: {}
 
@@ -181,7 +181,7 @@ postgresql:
     # Override any of these or add custom vars - they merge with defaults defined here
     env:
       POSTGRES_DB: immich
-      POSTGRESQL_STARTUP_TIMEOUT: '256'
+      POSTGRESQL_STARTUP_TIMEOUT: "256"
     extraEnvVarsCM: immich-postgresql-env
     customLivenessProbe:
       tcpSocket:
