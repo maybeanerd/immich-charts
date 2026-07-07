@@ -16,6 +16,17 @@ The detailed migration guide below will help ensure you don't miss any changes w
 
 ---
 
+## Version 0.14.0
+
+This update bumps immich to v3. Although all breaking changes should™ be internal to this chart, if you have overriden values, or are relying on API compatability, check the changes to see if you need adjustments:
+
+- [General Patchnotes
+](https://github.com/immich-app/immich/releases/tag/v3.0.0)
+- [In depth blogpost
+](https://immich.app/blog/v3-migration)
+
+One change of note is the removal of pgvectors support. If you have your own database setup, you might want to take a closer look at [the migration guide](https://docs.immich.app/install/upgrading/#migrating-to-vectorchord).
+
 ## Version 0.12.0
 
 ### Overview
