@@ -101,7 +101,7 @@ jobs:
           fi
 
       - name: Create diff comment
-        uses: int128/diff-action@4829f22189ff4c107f497424c0eb2778f6a167c3 # v1.59.0
+        uses: int128/diff-action@cb1378d1250b9c64b057505de7d4af8b99f25f7a # v2.37.0
         with:
           base: main/charts/immich/build
           head: charts/immich/build
