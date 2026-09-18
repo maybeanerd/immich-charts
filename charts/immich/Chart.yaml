@@ -14,7 +14,7 @@ maintainers:
 dependencies:
   - name: common
     repository: https://bjw-s-labs.github.io/helm-charts
-    version: 4.6.2
+    version: 5.1.0
   - name: postgresql
     condition: postgresql.enabled
     repository: https://charts.bitnami.com/bitnami
